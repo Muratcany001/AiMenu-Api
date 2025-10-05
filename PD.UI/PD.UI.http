@@ -1,0 +1,6 @@
+@PD.UI_HostAddress = http://localhost:5107
+
+GET {{PD.UI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
