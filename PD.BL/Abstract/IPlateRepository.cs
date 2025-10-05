@@ -8,5 +8,6 @@ namespace PD.DAL.Interface
 {
     public interface IPlateRepository
     {
+
     }
 }

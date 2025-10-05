@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PD.DAL.Repository
+namespace PD.BL.Concrete
 {
-    public class VideoRepository
+    public class EntryRepository
     {
     }
 }

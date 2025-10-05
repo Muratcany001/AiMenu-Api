@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PD.DAL.Interface
+namespace PD.BL.Abstract
 {
-    public interface IVideoRepository
+    public interface IEntryRepository
     {
     }
 }
