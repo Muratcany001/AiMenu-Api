@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PD.BL.Concrete
+namespace PD.BL.Services.PlateService
 {
-    public class EntryRepository
+    public class PlateRepository
     {
     }
 }

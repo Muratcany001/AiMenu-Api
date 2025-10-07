@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PD.BL.Abstract
+namespace PD.BL.Services.UserService
 {
-    public interface IEntryRepository
+    public class UserService
     {
     }
 }
