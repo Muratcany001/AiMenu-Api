@@ -1,4 +1,7 @@
-﻿using System;
+﻿using Common.ViewModels;
+using Dtos.UserDtos;
+using PD.DAL.Entitites.AppEntitites;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,11 +17,6 @@ namespace PD.BL.Services.UserService
         Task<ResultViewModel<UserDto>> UpdateUserAsync(int id, UpdateUserDto updateUserDto);
         Task<ResultViewModel<object>> DeleteUserAsync(int id);
         Task<ResultViewModel<object>> UpdatePasswordAsync(int id, UpdatePasswordDto updatePasswordDto);
-        ResultViewModel<object> ValidateUser(string email, string password);
-
         Task<ResultViewModel<User>> GetByEmailAsync(string email);
-        Task<ResultViewModel<List<User>>> GetActiveUsersAsync();
-        Task<ResultViewModel<User>> GetUserWithRolesAsync(string role);
-        Task<ResultViewModel<bool>> EmailExistsAsync(string email);
     }
 }

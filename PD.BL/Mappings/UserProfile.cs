@@ -1,4 +1,7 @@
-﻿using System;
+﻿using AutoMapper;
+using Dtos.UserDtos;
+using PD.DAL.Entitites.AppEntitites;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
