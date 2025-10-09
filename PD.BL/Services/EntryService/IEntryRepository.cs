@@ -4,9 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PD.DAL.Repository
+namespace PD.BL.Services.EntryService
 {
-    internal class UserRepository
+    public interface IEntryRepository
     {
+
     }
 }

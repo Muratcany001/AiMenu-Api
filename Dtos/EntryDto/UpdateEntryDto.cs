@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PD.DAL.Repository
+namespace Dtos.EntryDto
 {
-    internal class UserRepository
+    public class UpdateEntryDto
     {
     }
 }

@@ -6,8 +6,7 @@ using System.Threading.Tasks;
 
 namespace PD.DAL.Interface
 {
-    public interface IUserRepository
+    internal interface IUserRepository
     {
-
     }
 }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace PD.DAL.Repository
 {
-    internal class UserRepository
+    internal class EntryRepository
     {
     }
 }

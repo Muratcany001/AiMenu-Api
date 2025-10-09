@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace PD.DAL.Repository
 {
-    public class PlateRepository
+    internal class PlateRepository
     {
     }
 }

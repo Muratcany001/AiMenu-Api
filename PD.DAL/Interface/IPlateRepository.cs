@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace PD.DAL.Interface
 {
-    public interface IPlateRepository
+    internal interface IPlateRepository
     {
     }
 }

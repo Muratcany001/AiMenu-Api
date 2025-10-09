@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PD.DAL.Repository
+namespace PD.BL.Services.PlateService
 {
-    internal class UserRepository
+    public class PlateRepository
     {
     }
 }
