@@ -14,7 +14,6 @@ namespace PD.DAL.Entitites.AppEntitites
         public int TotalPrice { get; set; }
         public string TableNumber { get; set; }
         public string Notes { get; set; }
-
         public virtual ICollection<OrderItem> OrderItems { get; set; } = new  List<OrderItem>();
     }
 }

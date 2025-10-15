@@ -4,9 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PD.BL.Validators.PlateValidator
+namespace Dtos.OrderItemDto
 {
-    public class UpdatePlateDtoValidator
+    public class SetQuantityDto
     {
+        public int Quantity { get; set; }
     }
 }
