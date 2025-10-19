@@ -12,6 +12,7 @@ namespace Dtos.UserDtos
         public string Email { get; set; }
         public string Block { get; set; }
         public string Floor { get; set; }
+        public string Password { get; set; }
         public string DoorNumber { get; set; }
         public string PhoneNumber { get; set; }
     }
