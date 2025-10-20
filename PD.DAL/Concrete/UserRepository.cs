@@ -13,19 +13,17 @@ namespace PD.DAL.Repository
 {
     public class UserRepository : BaseRepository<User>, IUserRepository
     {
-        private readonly IUserRepository _userRepository;
-        private readonly IBaseRepository<User> _baseRepository;
-
-        // Fix for CS7036: Add required 'Context context' parameter and pass to base constructor
-        public UserRepository(Context context, IUserRepository userRepository, IBaseRepository<User> baseRepository)
+        // Artık IBaseRepository<User> enjekte etmeye gerek yok. 
+        // Temel sınıfa (BaseRepository) Context'i gönderiyoruz.
+        public UserRepository(Context context)
             : base(context)
         {
-            _userRepository = userRepository;
-            _baseRepository = baseRepository;
+            // Constructor'ın içi boş kalabilir veya sadece BaseRepository'ye Context'i göndermesi yeterlidir.
         }
 
         public async Task<ResultViewModel<User>> GetByEmailAsync(string email)
         {
+            // ... (Kodunuz buraya devam eder, miras alınan _dbSet'i kullanır)
             var user = await _dbSet.FirstOrDefaultAsync(u => u.Email == email);
             return ResultViewModel<User>.Success(user, "kullanici bulundu", 200);
         }

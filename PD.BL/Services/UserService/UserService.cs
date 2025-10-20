@@ -2,6 +2,7 @@
 using Common.ViewModels;
 using Dtos.UserDtos;
 using FluentValidation;
+using PD.BL.Helpers;
 using PD.DAL.Entitites.AppEntitites;
 using PD.DAL.Interface;
 using System;
@@ -13,11 +14,11 @@ using System.Threading.Tasks;
 namespace PD.BL.Services.UserService
 {
 
-    public class UserService : IUserService
+    public class UserService : IUserService 
     {
 
         private readonly IBaseRepository<User> _userRepository;
-        private readonly IUserRepository _userRepository2;
+        private readonly HashHelper _hashHelper;
         private readonly IMapper _mapper;
         private readonly IValidator<RegisterDto> _createUserValidator;
         private readonly IValidator<UpdateUserDto> _updateUserValidator;
@@ -29,14 +30,15 @@ namespace PD.BL.Services.UserService
             IValidator<RegisterDto> createUserValidator,
             IValidator<UpdateUserDto> updateUserValidator,
             IValidator<UpdatePasswordDto> updatePasswordValidator,
+            HashHelper hashHelper,
             IUserRepository userRepository2)
         {
             _userRepository = userRepository;
+            _hashHelper = hashHelper;
             _mapper = mapper;
             _createUserValidator = createUserValidator;
             _updateUserValidator = updateUserValidator;
             _updatePasswordValidator = updatePasswordValidator;
-            _userRepository2 = userRepository2;
         }
         public async Task<ResultViewModel<UserDto>> CreateUserAsync(RegisterDto registerDto)
         {
@@ -46,8 +48,8 @@ namespace PD.BL.Services.UserService
                 var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
                 return ResultViewModel<UserDto>.Failure("Girilen bilgileri kontrol et", errors, 400);
             }
-            var existedEmail = await _userRepository2.GetByEmailAsync(registerDto.Email);
-            if (existedEmail.Data != null)
+            var existedEmail = await _userRepository.GetSingleByConditionAsync(u => u.Email == registerDto.Email);
+            if (existedEmail != null)
             {
                 return ResultViewModel<UserDto>.Failure("Bu email zaten kayıtlı", new List<string> { "Email zaten kullanılıyor" }, 400);
             }
@@ -92,11 +94,23 @@ namespace PD.BL.Services.UserService
 
         public async Task<ResultViewModel<object>> UpdatePasswordAsync(int id, UpdatePasswordDto updatePasswordDto)
         {
-            var existedUser = await GetUserByIdAsync(id);
-            existedUser.Data.Password = updatePasswordDto.NewPassword;
-            var userDto = _mapper.Map<UserDto>(existedUser);
-            await _userRepository.UpdateAsync(_mapper.Map<User>(userDto));
-            return ResultViewModel<object>.Success(null, "Şifre başarıyla güncellendi", 200);
+            var userEntity = await _userRepository.GetByIdAsync(id);
+            if (userEntity == null)
+            {
+                return ResultViewModel<object>.Failure("Kullanıcı bulunamadı.", null, 404);
+            }
+            if (!HashHelper.VerifyPasswordHash(updatePasswordDto.OldPassword, userEntity.PasswordHash, userEntity.PasswordSalt))
+            {
+                return ResultViewModel<object>.Failure("Mevcut şifre yanlış.", null, 400);
+            }            
+            HashHelper.CreatePasswordHash(updatePasswordDto.NewPassword, out byte[] newPasswordHash, out byte[] newPasswordSalt);
+
+            userEntity.PasswordHash = newPasswordHash;
+            userEntity.PasswordSalt = newPasswordSalt;
+
+            await _userRepository.UpdateAsync(userEntity);
+
+            return ResultViewModel<object>.Success(null, "Şifre başarıyla güncellendi.", 200);
         }
 
         public async Task<ResultViewModel<UserDto>> UpdateUserAsync(int id, UpdateUserDto updateUserDto)
