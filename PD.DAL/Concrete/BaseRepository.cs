@@ -85,6 +85,12 @@ namespace PD.DAL.Repository
         {
             return await _dbSet.AnyAsync(predicate);
         }
+
+        public async Task<T?> GetSingleByConditionAsync(Expression<Func<T, bool>> expression)
+        {
+            
+            return await _dbSet.FirstOrDefaultAsync(expression);
+        }
     }
 
 }

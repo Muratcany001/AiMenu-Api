@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <Folder Include="Services\HashService\" />
-    <Folder Include="Validators\EntryValidator\" />
   </ItemGroup>
 
   <ItemGroup>

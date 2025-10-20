@@ -17,6 +17,6 @@ namespace PD.BL.Services.UserService
         Task<ResultViewModel<UserDto>> UpdateUserAsync(int id, UpdateUserDto updateUserDto);
         Task<ResultViewModel<object>> DeleteUserAsync(int id);
         Task<ResultViewModel<object>> UpdatePasswordAsync(int id, UpdatePasswordDto updatePasswordDto);
-        Task<ResultViewModel<User>> GetByEmailAsync(string email);
+        
     }
 }

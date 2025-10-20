@@ -24,5 +24,7 @@ namespace PD.DAL.Interface
         Task UpdateAsync(T entity);
         Task DeleteAsync(T entity);
         Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate);
+
+        Task<T?> GetSingleByConditionAsync(Expression<Func<T, bool>> expression);
     }
 }

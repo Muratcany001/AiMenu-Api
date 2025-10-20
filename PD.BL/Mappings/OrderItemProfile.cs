@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using Dtos.EntryDto;
+using Dtos.OrderItemDto;
 using PD.DAL.Entitites.AppEntitites;
 using System;
 using System.Collections.Generic;
@@ -9,12 +9,12 @@ using System.Threading.Tasks;
 
 namespace PD.BL.Mappings
 {
-    public class EntryProfile : Profile
+    public class OrderItemProfile : Profile
     {
-        EntryProfile()
+        public OrderItemProfile()
         {
-            CreateMap<EntryDto, Entry>();
-            CreateMap<Entry, EntryDto>();
+            CreateMap<CreateOrderItemDto, OrderItem>();
+            CreateMap<SetQuantityDto, OrderItem>();
         }
     }
 }

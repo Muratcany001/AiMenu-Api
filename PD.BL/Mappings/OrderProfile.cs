@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using Dtos;
+using Dtos.OrderDto;
 using Dtos.UserDtos;
 using PD.DAL.Entitites.AppEntitites;
 using System;
@@ -10,12 +10,12 @@ using System.Threading.Tasks;
 
 namespace PD.BL.Mappings
 {
-    public class PlateProfile : Profile
+    public class OrderProfile : Profile
     {
-        public PlateProfile()
+        public OrderProfile()
         {
-            CreateMap<UserDto, User>();
-            CreateMap<User, UserDto>();
+            CreateMap<CreateOrderDto, Order>();
+            CreateMap<UpdateOrderDto, Order>();
         }
     }
 }

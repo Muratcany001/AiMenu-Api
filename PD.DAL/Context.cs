@@ -13,21 +13,11 @@ namespace PD.DAL
         public Context(DbContextOptions<Context> options) : base(options) { }
 
         public DbSet<User> Users { get; set; }
-        public DbSet<Entry> Entries { get; set; }
-        public DbSet<Plate> Plates { get; set; }
+        public DbSet<Role> Roles { get; set; }
+        public DbSet<OrderItem> OrderItems { get; set; }
+        public DbSet<Order> Orders { get; set; }
+        public DbSet<MenuItem> MenuItems { get; set; }
+        public DbSet<Admin> Admins { get; set; }
 
-
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
-
-            modelBuilder.Entity<Plate>()
-                .HasMany(e => e.Entries)
-                .WithOne(p => p.Plate)
-                .HasForeignKey(e => e.PlateId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            
-        }
     }
 }

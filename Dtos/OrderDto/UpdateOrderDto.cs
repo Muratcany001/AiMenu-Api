@@ -4,9 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PD.DAL.Repository
+namespace Dtos.OrderDto
 {
-    internal class UserRepository
+    public class UpdateOrderDto
     {
+        public string Status { get; set; }
     }
 }

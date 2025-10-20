@@ -4,9 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PD.DAL.Interface
+namespace Dtos.OrderItemDto
 {
-    internal interface EntryRepository
+    public class SetQuantityDto
     {
+        public int Quantity { get; set; }
     }
 }
