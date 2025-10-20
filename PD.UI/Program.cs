@@ -19,7 +19,8 @@ builder.Services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
 var mappingAssemblies = new[] { typeof(PD.BL.Services.UserService.UserService).Assembly };
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<PD.BL.Services.UserService.UserService>();
-// Add services to the container.
+
+
 builder.Services.AddAutoMapper(config =>
 {
     config.AddMaps(mappingAssemblies);
