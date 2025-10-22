@@ -12,6 +12,11 @@ namespace PD.BL.Validators.UserValidator
     {
         public RegisterDtoValidator()
         {
+            RuleFor(x => x.Name)
+                .NotEmpty().WithMessage("Name is required.")
+                .MinimumLength(2).WithMessage("Name must be at least 2 characters long.")
+                .MaximumLength(50).WithMessage("Name cannot exceed 50 characters.");
+
             RuleFor(x => x.Email)
                 .NotEmpty().WithMessage("Email is required.")
                 .EmailAddress().WithMessage("Invalid email format.");

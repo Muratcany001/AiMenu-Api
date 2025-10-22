@@ -6,8 +6,14 @@ using PD.DAL.Interface;
 using PD.DAL.Repository;
 using System.Reflection;
 using AutoMapper;
-using FluentValidation.AspNetCore;
 using FluentValidation;
+using FluentValidation.AspNetCore;
+using Dtos.UserDtos;
+using PD.BL.Validators.UserValidator;
+using PD.BL.Helpers;
+
+
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,18 +21,17 @@ var builder = WebApplication.CreateBuilder(args);
 //Servis ve repisotory tanitimi
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IValidator<RegisterDto>, RegisterDtoValidator>();
 builder.Services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
-var mappingAssemblies = new[] { typeof(PD.BL.Services.UserService.UserService).Assembly };
 builder.Services.AddFluentValidationAutoValidation();
-builder.Services.AddValidatorsFromAssemblyContaining<PD.BL.Services.UserService.UserService>();
-
-
-builder.Services.AddAutoMapper(config =>
-{
-    config.AddMaps(mappingAssemblies);
+builder.Services.AddAutoMapper(cfg => {
+    cfg.AddMaps(typeof(UserService).Assembly);
 });
 
 builder.Services.AddControllers();
+//fluent validation
+builder.Services.AddValidatorsFromAssemblyContaining<UserService>();
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
