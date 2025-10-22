@@ -19,7 +19,7 @@ namespace PD.BL.Validators.UserValidator
                     .EmailAddress().WithMessage("Invalid email format.");
 
             RuleFor(x => x.Name)
-                    .NotEmpty().WithMessage("Email is required.");
+                    .NotEmpty().WithMessage("Name is required.");
         }
     }
 }
