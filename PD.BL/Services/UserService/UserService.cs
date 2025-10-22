@@ -18,11 +18,8 @@ namespace PD.BL.Services.UserService
     {
 
         private readonly IBaseRepository<User> _userRepository;
-        private readonly HashHelper _hashHelper;
         private readonly IMapper _mapper;
         private readonly IValidator<RegisterDto> _createUserValidator;
-        private readonly IValidator<UpdateUserDto> _updateUserValidator;
-        private readonly IValidator<UpdatePasswordDto> _updatePasswordValidator;
 
         public UserService(
             IBaseRepository<User> userRepository,
@@ -30,15 +27,11 @@ namespace PD.BL.Services.UserService
             IValidator<RegisterDto> createUserValidator,
             IValidator<UpdateUserDto> updateUserValidator,
             IValidator<UpdatePasswordDto> updatePasswordValidator,
-            HashHelper hashHelper,
             IUserRepository userRepository2)
         {
             _userRepository = userRepository;
-            _hashHelper = hashHelper;
             _mapper = mapper;
             _createUserValidator = createUserValidator;
-            _updateUserValidator = updateUserValidator;
-            _updatePasswordValidator = updatePasswordValidator;
         }
         public async Task<ResultViewModel<UserDto>> CreateUserAsync(RegisterDto registerDto)
         {
