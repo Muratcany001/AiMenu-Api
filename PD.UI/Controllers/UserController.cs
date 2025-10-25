@@ -1,5 +1,6 @@
 ﻿using Dtos.UserDtos;
 using Microsoft.AspNetCore.Mvc;
+using PD.BL.Services.AuthService;
 using PD.BL.Services.UserService;
 using PD.DAL.Interface;
 
@@ -9,12 +10,21 @@ namespace PD.UI.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
-        private readonly IUserRepository userRepository;
+        private readonly IUserRepository _userRepository;
+        private readonly IAuthService _authService;
 
-        public UserController(IUserService userService, IUserRepository userRepository)
+        public UserController(IUserService userService, IUserRepository userRepository, IAuthService authService)
         {
             _userService = userService;
-            this.userRepository = userRepository;
+            _userRepository = userRepository;
+            _authService = authService;
+        }
+
+        [HttpPost("api/users/login")]
+        public async Task<IActionResult> Login(LoginDto loginDto)
+        {
+            var token = await _authService.Login(loginDto);
+            return Ok(new { token = token });
         }
 
         [HttpPost("api/users/createUser")]
@@ -37,10 +47,10 @@ namespace PD.UI.Controllers
 
         }
         [HttpGet("api/users/getAllUsers")]
-        public async Task<List<IActionResult>> GetAllUsersAsync()
+        public async Task<IActionResult> GetAllUsers()
         {
             var users = await _userService.GetAllUsersAsync();
-            return new List<IActionResult> { Ok(users) };
+            return Ok(users);
         }
         [HttpPut("api/users/updateUser/{id}")]
         public async Task<IActionResult> UpdateUser(int id, UpdateUserDto updateUserDto)
@@ -48,7 +58,7 @@ namespace PD.UI.Controllers
             var updatedUser = await _userService.UpdateUserAsync(id, updateUserDto);
             return Ok(updatedUser);
         }
-        [HttpDelete("api/users/updateUser/{id}")]
+        [HttpDelete("api/users/deleteUser/{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
             var result = await _userService.DeleteUserAsync(id);
