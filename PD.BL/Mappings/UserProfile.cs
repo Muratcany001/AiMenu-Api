@@ -15,6 +15,13 @@ namespace PD.BL.Mappings
         {     
             CreateMap<UserDto, User>();
             CreateMap<User, UserDto>();
+            CreateMap<UpdateUserDto, User>();
+            CreateMap<User, UpdateUserDto>();
+            CreateMap<UpdatePasswordDto, User>();
+            CreateMap<User, UpdatePasswordDto>();
+            CreateMap<RegisterDto, User>();
+            CreateMap<User, RegisterDto>();
+            CreateMap<LoginDto, User>();
         }
     }
 }

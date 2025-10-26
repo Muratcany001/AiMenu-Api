@@ -11,6 +11,8 @@ using FluentValidation.AspNetCore;
 using Dtos.UserDtos;
 using PD.BL.Validators.UserValidator;
 using PD.BL.Helpers;
+using PD.BL.Services.AuthService;
+using PD.BL.Helpers.JwtHelper;
 
 
 
@@ -22,6 +24,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IValidator<RegisterDto>, RegisterDtoValidator>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IJwtHelper, JwtHelper>();
+builder.Services.AddScoped<HashHelper, HashHelper>();
 builder.Services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddAutoMapper(cfg => {

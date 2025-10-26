@@ -12,7 +12,7 @@ namespace PD.BL.Validators.UserValidator
     {
         public LoginDtoValidator() {
 
-            RuleFor(x => x.UserName)
+            RuleFor(x => x.Email)
                .NotEmpty().WithMessage("Email is required.")
                .EmailAddress().WithMessage("Invalid email format.");
 

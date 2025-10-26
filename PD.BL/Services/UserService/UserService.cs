@@ -3,6 +3,7 @@ using Common.ViewModels;
 using Dtos.UserDtos;
 using FluentValidation;
 using PD.BL.Helpers;
+using PD.BL.Services.AuthService;
 using PD.DAL.Entitites.AppEntitites;
 using PD.DAL.Interface;
 using System;
@@ -46,9 +47,13 @@ namespace PD.BL.Services.UserService
             {
                 return ResultViewModel<UserDto>.Failure("Bu email zaten kayıtlı", new List<string> { "Email zaten kullanılıyor" }, 400);
             }
-
+            byte[] passwordHash, passwordSalt;
             var userEntity = _mapper.Map<User>(registerDto);
+            HashHelper.CreatePasswordHash(registerDto.Password, out passwordHash, out passwordSalt);
+            userEntity.PasswordHash = passwordHash;
+            userEntity.PasswordSalt = passwordSalt;
 
+            userEntity.Role = "User";
             await _userRepository.AddAsync(userEntity);
             var userDto = _mapper.Map<UserDto>(userEntity);
             return ResultViewModel<UserDto>.Success(userDto, "Kullanıcı başarıyla oluşturuldu", 201);
@@ -68,7 +73,7 @@ namespace PD.BL.Services.UserService
 
         public async Task<ResultViewModel<List<UserDto>>> GetAllUsersAsync()
         {
-            var users = await _userRepository.GetAsync();
+            var users = await _userRepository.GetListAsync(asNoTracking:true);
             var userDtos = _mapper.Map<List<UserDto>>(users);
             return ResultViewModel<List<UserDto>>.Success(userDtos, "Kullanıcılar başarıyla getirildi", 200);
         }
