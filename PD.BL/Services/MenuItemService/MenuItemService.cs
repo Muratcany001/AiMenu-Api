@@ -17,12 +17,10 @@ namespace PD.BL.Services.MenuItemService
     {
         private readonly IBaseRepository<MenuItem> _baseRepository;
         private readonly IMapper _mapper;
-        private readonly IValidator<MenuItem> _createMenuItemValidator;
-        public MenuItemService(IBaseRepository<MenuItem> menuItemRepository, IMapper mapper, IValidator<MenuItem> _validator)
+        public MenuItemService(IBaseRepository<MenuItem> menuItemRepository, IMapper mapper)
         {
             _baseRepository = menuItemRepository;
             _mapper = mapper;
-            _createMenuItemValidator = _validator;
         }
 
         public async Task<ResultViewModel<MenuItemDto>> AddMenuItem(AddMenuItemDto addMenuItemDto)
@@ -30,7 +28,7 @@ namespace PD.BL.Services.MenuItemService
             var existedItem = await _baseRepository.GetAsync(x => x.Name.Equals(addMenuItemDto.Name));
             if (existedItem != null)
             {
-                return ResultViewModel<MenuItemDto>.Failure("this menu already exists",null, 400);
+                return ResultViewModel<MenuItemDto>.Failure("this item already exists",null, 400);
             }
             var menuItemEntity =  _mapper.Map<MenuItem>(addMenuItemDto);
             await _baseRepository.AddAsync(menuItemEntity);
@@ -52,7 +50,7 @@ namespace PD.BL.Services.MenuItemService
 
         public async Task<ResultViewModel<List<MenuItemDto>>> GetAllMenuItems()
         {
-            var existedItems = await  _baseRepository.GetAsync(asNoTracking: false);
+            var existedItems = await  _baseRepository.GetListAsync(asNoTracking: false);
             if (existedItems == null)
             {
                 return ResultViewModel<List<MenuItemDto>>.NotFound("No menu items found",404);
@@ -72,20 +70,16 @@ namespace PD.BL.Services.MenuItemService
             return ResultViewModel<MenuItemDto>.Success(data, "Menu item retrieved successfully", 200);
         }
 
-        public async Task<ResultViewModel<MenuItemDto>> GetMenuItemByIngeredients(string ingredients)
+        public async Task<ResultViewModel<List<MenuItemDto>>> GetMenuItemByIngeredients(string ingredients)
         {
-            var existedItems = await _baseRepository.GetAsync(x => x.Ingeredents.Equals(ingredients));
-            if (existedItems == null)
-            {
-                return ResultViewModel<MenuItemDto>.NotFound("Menu item not found",404);
-            }
-            var data = _mapper.Map<MenuItemDto>(existedItems);
-            return ResultViewModel<MenuItemDto>.Success(data, "Menu item retrieved successfully", 200);
+            var existedItems = await _baseRepository.GetListAsync(x => x.Ingeredents.Equals(ingredients));
+            var data = _mapper.Map<List<MenuItemDto>>(existedItems);
+            return ResultViewModel<List<MenuItemDto>>.Success(data, "Menu items retrieved successfully", 200);
         }
 
         public async Task<ResultViewModel<List<MenuItemDto>>> GetMenuItemsByCategory(string category)
         {
-            var menuItems =  await _baseRepository.GetAsync(x => x.Category.Equals(category, StringComparison.OrdinalIgnoreCase));
+            var menuItems =  await _baseRepository.GetListAsync(x => x.Category.ToUpper() == category.ToUpper());
             var data = _mapper.Map<List<MenuItemDto>>(menuItems);
             return ResultViewModel<List<MenuItemDto>>.Success(data, "Menu items retrieved successfully", 200);
         }
@@ -97,14 +91,14 @@ namespace PD.BL.Services.MenuItemService
                 return ResultViewModel<List<MenuItemDto>>.Failure("Invalid price range", null, 400);
             }
             
-           var existedItems= await _baseRepository.GetAsync(x => x.Price >= minPrice && x.Price <= maxPrice);
+           var existedItems= await _baseRepository.GetListAsync(x => x.Price >= minPrice && x.Price <= maxPrice);
             var data = _mapper.Map<List<MenuItemDto>>(existedItems);
             return ResultViewModel<List<MenuItemDto>>.Success(data, "Menu items retrieved successfully", 200);
         }
 
         public async Task<ResultViewModel<List<MenuItemDto>>> SearchMenuItems(string searchTerm)
         {
-            var existedItems = await _baseRepository.GetAsync(x => x.Name.Contains(searchTerm) || x.Description.Contains(searchTerm));
+            var existedItems = await _baseRepository.GetListAsync(x => x.Name.Contains(searchTerm) || x.Description.Contains(searchTerm), asNoTracking:false);
             if (existedItems == null)
             {
                 return ResultViewModel<List<MenuItemDto>>.NotFound("No menu items found matching the search term",404);

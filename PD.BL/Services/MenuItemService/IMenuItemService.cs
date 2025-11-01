@@ -19,6 +19,6 @@ namespace PD.BL.Services.MenuItemService
         Task<ResultViewModel<List<MenuItemDto>>> GetMenuItemsByCategory(string category);
         Task<ResultViewModel<List<MenuItemDto>>> SearchMenuItems(string searchTerm);
         Task<ResultViewModel<List<MenuItemDto>>> GetMenuItemsByPriceRange(decimal minPrice, decimal maxPrice);
-        Task<ResultViewModel<MenuItemDto>> GetMenuItemByIngeredients(string ingredients);
+        Task<ResultViewModel<List<MenuItemDto>>> GetMenuItemByIngeredients(string ingredients);
     }
 }
