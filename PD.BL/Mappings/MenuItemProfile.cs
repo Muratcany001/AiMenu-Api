@@ -16,8 +16,7 @@ namespace PD.BL.Mappings
             CreateMap<MenuItemDto, MenuItem>();
             CreateMap<AddMenuItemDto, MenuItem>();
             CreateMap<UpdateMenuItemDto, MenuItem>();
-
+            CreateMap<MenuItem, MenuItemDto>();
         }
-
     }
 }

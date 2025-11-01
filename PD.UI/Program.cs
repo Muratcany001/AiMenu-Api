@@ -13,6 +13,7 @@ using PD.BL.Validators.UserValidator;
 using PD.BL.Helpers;
 using PD.BL.Services.AuthService;
 using PD.BL.Helpers.JwtHelper;
+using PD.BL.Services.MenuItemService;
 
 
 
@@ -20,14 +21,23 @@ using PD.BL.Helpers.JwtHelper;
 var builder = WebApplication.CreateBuilder(args);
 
 
-//Servis ve repisotory tanitimi
+//services
+builder.Services.AddScoped<IMenuItemService, MenuItemService>();
 builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IValidator<RegisterDto>, RegisterDtoValidator>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+
+//repositories
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
+
+//validators
+builder.Services.AddScoped<IValidator<RegisterDto>, RegisterDtoValidator>();
+builder.Services.AddScoped<IValidator<UpdateUserDto>, UpdateUserDtoValidator>();
+//helpers
 builder.Services.AddScoped<IJwtHelper, JwtHelper>();
 builder.Services.AddScoped<HashHelper, HashHelper>();
-builder.Services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
+
+
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddAutoMapper(cfg => {
     cfg.AddMaps(typeof(UserService).Assembly);
@@ -40,9 +50,6 @@ builder.Services.AddValidatorsFromAssemblyContaining<UserService>();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
-
-
 
 
 builder.Services.AddDbContext<Context>(options =>
