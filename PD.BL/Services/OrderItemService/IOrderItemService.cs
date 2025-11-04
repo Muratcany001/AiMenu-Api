@@ -15,6 +15,5 @@ namespace PD.BL.Services.OrderItemService
         Task<ResultViewModel<bool>> DeleteOrderItemAsync(int orderItemId);
         Task<ResultViewModel<List<OrderItemDto>>> GetOrderItemsByOrderIdAsync(int orderId);
         Task<ResultViewModel<OrderItemDto>> UpdateOrderItemNoteById(int orderItemId, UpdateOrderItemNoteDto updateOrderItemNoteDto);
-        Task<ResultViewModel<OrderItemDto>> GetOrderItemTotalPrice();
     }
 }

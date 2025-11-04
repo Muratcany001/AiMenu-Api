@@ -16,14 +16,15 @@ namespace PD.BL.Services.OrderItemService
         private readonly IBaseRepository<OrderItem> _orderItemRepository;
         private readonly IMapper _mapper;
 
-        public OrderItemService(IBaseRepository<OrderItem> orderItemRepository)
+        public OrderItemService(IBaseRepository<OrderItem> orderItemRepository, IMapper mapper)
         {
             _orderItemRepository = orderItemRepository;
+            _mapper = mapper;
         }
 
         public async Task<ResultViewModel<OrderItemDto>> AddOrderItemAsync(CreateOrderItemDto createOrderItemDto)
         {
-            var existedItem = await _orderItemRepository.GetAsync(x => x.Id == createOrderItemDto.MenuItemId);
+            var existedItem = await _orderItemRepository.GetAsync(x => x.Id == createOrderItemDto.OrderId && x.MenuItemId == createOrderItemDto.MenuItemId);
             if (existedItem != null)
             {
                 return ResultViewModel<OrderItemDto>.Failure("this item already exists", null, 400);
@@ -48,24 +49,12 @@ namespace PD.BL.Services.OrderItemService
         public async Task<ResultViewModel<List<OrderItemDto>>> GetOrderItemsByOrderIdAsync(int orderId)
         {
             var orderItems = await _orderItemRepository.GetListAsync(x => x.OrderId == orderId, asNoTracking:true);
-            if(orderItems == null)
+            if (!orderItems.Any())
             {
                 return ResultViewModel<List<OrderItemDto>>.NotFound("No order items found", 404);
             }
             var list = _mapper.Map<List<OrderItemDto>>(orderItems);
             return ResultViewModel<List<OrderItemDto>>.Success(list, "Order list found", 200);
-        }
-
-        public async Task<ResultViewModel<OrderItemDto>> GetOrderItemTotalPrice()
-        {
-            var totalPrice = await _orderItemRepository.GetAsync( x=> x.Order.TotalPrice == x.quantity * x.MenuItem.Price, asNoTracking:true);
-            if (totalPrice == null)
-            {
-                return ResultViewModel<OrderItemDto>.NotFound("No order items found", 404);
-            }
-            var data = _mapper.Map<OrderItemDto>(totalPrice);
-            return ResultViewModel<OrderItemDto>.Success(data, "Total price calculated successfully", 200);
-
         }
 
         public async Task<ResultViewModel<OrderItemDto>> SetQuantityAsync(SetQuantityDto setQuantityDto)
@@ -94,7 +83,12 @@ namespace PD.BL.Services.OrderItemService
             {
                 ResultViewModel<OrderItemDto>.NotFound("Order item not found", 404);
             }
+            if(updateOrderItemNoteDto.Note.Any())
+            {
+                return ResultViewModel<OrderItemDto>.Failure("Note cannot be empty", null, 400);
+            }
             orderItem.Note = updateOrderItemNoteDto.Note;
+            
             await _orderItemRepository.UpdateAsync(orderItem);
             var data = _mapper.Map<OrderItemDto>(orderItem);
             return ResultViewModel<OrderItemDto>.Success(data, "Order item note updated successfully", 200);
