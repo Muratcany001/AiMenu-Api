@@ -15,6 +15,9 @@ namespace PD.BL.Mappings
         {
             CreateMap<CreateOrderItemDto, OrderItem>();
             CreateMap<SetQuantityDto, OrderItem>();
+            
+            CreateMap<OrderItem, OrderItemDto>();
+            CreateMap<OrderItemDto, OrderItem>();
         }
     }
 }
