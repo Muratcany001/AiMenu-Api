@@ -14,9 +14,9 @@ namespace PD.UI.Controllers
         }
 
         [HttpPost("api/orderItems/addOrderItem")]
-        public async Task<IActionResult> AddOrderItem(CreateOrderItemDto createOrderItemDto)
+        public async Task<IActionResult> AddOrderItem(int? orderId, CreateOrderItemDto createOrderItemDto)
         {
-            var result = await _orderItemService.AddOrderItemAsync(createOrderItemDto);
+            var result = await _orderItemService.AddOrderItemAsync(orderId, createOrderItemDto);
             return Ok(result);
         }
         [HttpDelete("api/orderItems/deleteOrderItem/{orderItemId}")]
@@ -31,6 +31,14 @@ namespace PD.UI.Controllers
         {
             var result = await _orderItemService.GetOrderItemsByOrderIdAsync(orderId);
             return Ok(result);
+        }
+        [HttpPut("api/orderItems/setQuantity")]
+        public async Task<IActionResult> SetQuantity(SetQuantityDto setQuantityDto)
+        {
+        
+            var result = await _orderItemService.SetQuantityAsync(setQuantityDto);
+            return Ok(result);
+        
         }
     }
 }

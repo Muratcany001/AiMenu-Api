@@ -16,6 +16,7 @@ namespace PD.BL.Mappings
         {
             CreateMap<CreateOrderDto, Order>();
             CreateMap<UpdateOrderDto, Order>();
+            CreateMap<OrderDto, Order>();
         }
     }
 }
