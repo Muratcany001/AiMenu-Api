@@ -10,7 +10,7 @@ namespace PD.BL.Services.OrderItemService
 {
     public interface IOrderItemService
     {
-        Task<ResultViewModel<OrderItemDto>> AddOrderItemAsync(CreateOrderItemDto createOrderItemDto);
+        Task<ResultViewModel<OrderItemDto>> AddOrderItemAsync(int? OrderId,CreateOrderItemDto createOrderItemDto);
         Task<ResultViewModel<OrderItemDto>> SetQuantityAsync(SetQuantityDto setQuantityDto);
         Task<ResultViewModel<bool>> DeleteOrderItemAsync(int orderItemId);
         Task<ResultViewModel<List<OrderItemDto>>> GetOrderItemsByOrderIdAsync(int orderId);

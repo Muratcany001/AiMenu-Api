@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Common.ViewModels;
+using Dtos.OrderDto;
 using Dtos.OrderItemDto;
 using PD.DAL.Entitites.AppEntitites;
 using PD.DAL.Interface;
@@ -14,21 +15,38 @@ namespace PD.BL.Services.OrderItemService
     public class OrderItemService : IOrderItemService
     {
         private readonly IBaseRepository<OrderItem> _orderItemRepository;
+        private readonly IBaseRepository<Order> _orderRepository;
         private readonly IMapper _mapper;
 
-        public OrderItemService(IBaseRepository<OrderItem> orderItemRepository, IMapper mapper)
+        public OrderItemService(IBaseRepository<OrderItem> orderItemRepository, IMapper mapper, IBaseRepository<Order> orderRepository)
         {
             _orderItemRepository = orderItemRepository;
             _mapper = mapper;
+            _orderRepository = orderRepository;
         }
 
-        public async Task<ResultViewModel<OrderItemDto>> AddOrderItemAsync(CreateOrderItemDto createOrderItemDto)
+        public async Task<ResultViewModel<OrderItemDto>> AddOrderItemAsync(int? OrderId,CreateOrderItemDto createOrderItemDto)
         {
-            var existedItem = await _orderItemRepository.GetAsync(x => x.Id == createOrderItemDto.OrderId && x.MenuItemId == createOrderItemDto.MenuItemId);
+            
+            var order= await _orderRepository.GetAsync(x => x.Id == OrderId);
+            if(order == null)
+            {
+                order = new Order
+                {
+                    Status = "Pending",
+                    Notes = null,
+                    TableNumber = null,
+                    TotalPrice = 0,
+                    OrderTime = DateTime.Now
+                };
+                await _orderRepository.AddAsync(order);
+            }
+            var existedItem = await _orderItemRepository.GetAsync(x => x.OrderId == OrderId && x.MenuItemId == createOrderItemDto.MenuItemId);
             if (existedItem != null)
             {
                 return ResultViewModel<OrderItemDto>.Failure("this item already exists", null, 400);
             }
+            createOrderItemDto.OrderId = order.Id;
             var oderItemEntity = _mapper.Map<OrderItem>(createOrderItemDto);
             await _orderItemRepository.AddAsync(oderItemEntity);
             var data = _mapper.Map<OrderItemDto>(oderItemEntity);
@@ -69,8 +87,8 @@ namespace PD.BL.Services.OrderItemService
             {
                 return ResultViewModel<OrderItemDto>.Failure("Quantity must be at least 1", null, 400);
             }
-            orderItem.quantity = setQuantityDto.Quantity;
-
+            orderItem.Quantity = setQuantityDto.Quantity;
+            
             await _orderItemRepository.UpdateAsync(orderItem);
             var data = _mapper.Map<OrderItemDto>(orderItem);
             return ResultViewModel<OrderItemDto>.Success(data, "Quantity updated successfully", 200);
