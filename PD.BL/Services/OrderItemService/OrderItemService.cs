@@ -5,6 +5,7 @@ using Dtos.OrderItemDto;
 using PD.DAL.Entitites.AppEntitites;
 using PD.DAL.Interface;
 using System;
+using PD.BL.Helpers.OrderHelper;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,26 +14,30 @@ using System.Threading.Tasks;
 namespace PD.BL.Services.OrderItemService
 {
     public class OrderItemService : IOrderItemService
-    {
+    {  
+        private readonly OrderNumberHelper _orderNumberHelper;
         private readonly IBaseRepository<OrderItem> _orderItemRepository;
         private readonly IBaseRepository<Order> _orderRepository;
         private readonly IMapper _mapper;
 
-        public OrderItemService(IBaseRepository<OrderItem> orderItemRepository, IMapper mapper, IBaseRepository<Order> orderRepository)
+        public OrderItemService(IBaseRepository<OrderItem> orderItemRepository, IMapper mapper, IBaseRepository<Order> orderRepository, OrderNumberHelper orderNumberHelper)
         {
             _orderItemRepository = orderItemRepository;
             _mapper = mapper;
             _orderRepository = orderRepository;
+            _orderNumberHelper = orderNumberHelper;
         }
 
         public async Task<ResultViewModel<OrderItemDto>> AddOrderItemAsync(int? OrderId,CreateOrderItemDto createOrderItemDto)
         {
             
+
             var order= await _orderRepository.GetAsync(x => x.Id == OrderId);
             if(order == null)
             {
                 order = new Order
                 {
+                    OrderNumber = OrderNumberHelper.GenerateOrderNumber(),
                     Status = "Pending",
                     Notes = null,
                     TableNumber = null,
@@ -41,11 +46,13 @@ namespace PD.BL.Services.OrderItemService
                 };
                 await _orderRepository.AddAsync(order);
             }
+            
             var existedItem = await _orderItemRepository.GetAsync(x => x.OrderId == OrderId && x.MenuItemId == createOrderItemDto.MenuItemId);
             if (existedItem != null)
             {
-                return ResultViewModel<OrderItemDto>.Failure("this item already exists", null, 400);
+                return ResultViewModel<OrderItemDto>.Failure("this item already exists in order", null, 400);
             }
+
             createOrderItemDto.OrderId = order.Id;
             var oderItemEntity = _mapper.Map<OrderItem>(createOrderItemDto);
             await _orderItemRepository.AddAsync(oderItemEntity);

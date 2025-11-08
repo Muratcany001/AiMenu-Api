@@ -19,6 +19,8 @@ using Dtos.MenuItemDto;
 using PD.BL.Validators.MenuItemValidator;
 using Dtos.OrderItemDto;
 using PD.BL.Validators.OrderItemValidator;
+using PD.BL.Services.OrderService;
+using PD.BL.Helpers.OrderHelper;
 
 
 
@@ -31,6 +33,7 @@ builder.Services.AddScoped<IMenuItemService, MenuItemService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IOrderItemService, OrderItemService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
 
 //repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -48,6 +51,7 @@ builder.Services.AddScoped<IValidator<UpdateOrderItemNoteDto>, UpdateOrderItemNo
 //helpers
 builder.Services.AddScoped<IJwtHelper, JwtHelper>();
 builder.Services.AddScoped<HashHelper, HashHelper>();
+builder.Services.AddScoped<OrderNumberHelper, OrderNumberHelper>();
 
 
 builder.Services.AddFluentValidationAutoValidation();

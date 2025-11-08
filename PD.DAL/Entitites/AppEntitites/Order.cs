@@ -9,6 +9,7 @@ namespace PD.DAL.Entitites.AppEntitites
     public class Order
     {
         public int Id { get; set; }
+        public string OrderNumber { get; set; }
         public DateTime OrderTime { get; set; } = DateTime.Now;
         public string Status { get; set; } = "Pending";
         public int TotalPrice { get; set; }

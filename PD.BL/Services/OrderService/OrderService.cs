@@ -2,6 +2,7 @@
 using Common.ViewModels;
 using Dtos.OrderDto;
 using Microsoft.EntityFrameworkCore;
+using PD.BL.Helpers.OrderHelper;
 using PD.DAL.Entitites.AppEntitites;
 using PD.DAL.Interface;
 using System;
@@ -33,6 +34,7 @@ namespace PD.BL.Services.OrderService
         {
             var newOrder = new Order
             {
+                OrderNumber = OrderNumberHelper.GenerateOrderNumber(),
                 Status = "Pending",
                 OrderTime = DateTime.UtcNow,
                 Notes = null,
