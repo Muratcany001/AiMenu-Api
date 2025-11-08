@@ -18,6 +18,8 @@ namespace PD.BL.Validators.OrderItemValidator
                .GreaterThan(0).WithMessage("Quantity must be greater than zero.");
             RuleFor(x => x.OrderId)
                .NotEmpty().WithMessage("Order Id is required.");
+            RuleFor(x => x.Note)
+                .MaximumLength(500);
         }
     }
 }

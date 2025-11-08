@@ -19,6 +19,8 @@ using Dtos.MenuItemDto;
 using PD.BL.Validators.MenuItemValidator;
 using Dtos.OrderItemDto;
 using PD.BL.Validators.OrderItemValidator;
+using PD.BL.Services.OrderService;
+using PD.BL.Helpers.OrderHelper;
 
 
 
@@ -31,6 +33,7 @@ builder.Services.AddScoped<IMenuItemService, MenuItemService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IOrderItemService, OrderItemService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
 
 //repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -42,12 +45,14 @@ builder.Services.AddScoped<IValidator<UpdateUserDto>, UpdateUserDtoValidator>();
 builder.Services.AddScoped<IValidator<LoginDto>, LoginDtoValidator>();
 builder.Services.AddScoped<IValidator<AddMenuItemDto>, AddMenuItemDtoValidator>();
 builder.Services.AddScoped<IValidator<UpdateMenuItemDto>, UpdateMenuItemDtoValidator>();
+builder.Services.AddScoped<IValidator<MenuItemDto>, MenuItemDtoValidator>();
 builder.Services.AddScoped<IValidator<CreateOrderItemDto>, CreateOrderItemDtoValidator>();
 builder.Services.AddScoped<IValidator<SetQuantityDto>, SetQuantityValidator>();
 builder.Services.AddScoped<IValidator<UpdateOrderItemNoteDto>, UpdateOrderItemNoteDtoValidator>();
 //helpers
 builder.Services.AddScoped<IJwtHelper, JwtHelper>();
 builder.Services.AddScoped<HashHelper, HashHelper>();
+builder.Services.AddScoped<OrderNumberHelper, OrderNumberHelper>();
 
 
 builder.Services.AddFluentValidationAutoValidation();

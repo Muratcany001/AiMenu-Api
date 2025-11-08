@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Dtos.MenuItemDto;
 using System.Threading.Tasks;
 
 namespace Dtos.OrderItemDto
@@ -12,6 +13,6 @@ namespace Dtos.OrderItemDto
         public int MenuItemId { get; set; }
         public int Quantity { get; set; }
         public string Note { get; set; }
-
+        public MenuItemDto.MenuItemDto MenuItem { get; set; }
     }
 }
