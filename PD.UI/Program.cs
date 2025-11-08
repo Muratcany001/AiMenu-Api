@@ -13,6 +13,12 @@ using PD.BL.Validators.UserValidator;
 using PD.BL.Helpers;
 using PD.BL.Services.AuthService;
 using PD.BL.Helpers.JwtHelper;
+using PD.BL.Services.MenuItemService;
+using PD.BL.Services.OrderItemService;
+using Dtos.MenuItemDto;
+using PD.BL.Validators.MenuItemValidator;
+using Dtos.OrderItemDto;
+using PD.BL.Validators.OrderItemValidator;
 
 
 
@@ -20,14 +26,30 @@ using PD.BL.Helpers.JwtHelper;
 var builder = WebApplication.CreateBuilder(args);
 
 
-//Servis ve repisotory tanitimi
+//services
+builder.Services.AddScoped<IMenuItemService, MenuItemService>();
 builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IValidator<RegisterDto>, RegisterDtoValidator>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IOrderItemService, OrderItemService>();
+
+//repositories
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
+
+//validators
+builder.Services.AddScoped<IValidator<RegisterDto>, RegisterDtoValidator>();
+builder.Services.AddScoped<IValidator<UpdateUserDto>, UpdateUserDtoValidator>();
+builder.Services.AddScoped<IValidator<LoginDto>, LoginDtoValidator>();
+builder.Services.AddScoped<IValidator<AddMenuItemDto>, AddMenuItemDtoValidator>();
+builder.Services.AddScoped<IValidator<UpdateMenuItemDto>, UpdateMenuItemDtoValidator>();
+builder.Services.AddScoped<IValidator<CreateOrderItemDto>, CreateOrderItemDtoValidator>();
+builder.Services.AddScoped<IValidator<SetQuantityDto>, SetQuantityValidator>();
+builder.Services.AddScoped<IValidator<UpdateOrderItemNoteDto>, UpdateOrderItemNoteDtoValidator>();
+//helpers
 builder.Services.AddScoped<IJwtHelper, JwtHelper>();
 builder.Services.AddScoped<HashHelper, HashHelper>();
-builder.Services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
+
+
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddAutoMapper(cfg => {
     cfg.AddMaps(typeof(UserService).Assembly);
@@ -40,9 +62,6 @@ builder.Services.AddValidatorsFromAssemblyContaining<UserService>();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
-
-
 
 
 builder.Services.AddDbContext<Context>(options =>

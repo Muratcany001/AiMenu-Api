@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace Dtos.OrderItemDto
 {
-    public class SetQuantityDto
+    public class UpdateOrderItemNoteDto
     {
         public int OrderItemId { get; set; }
-        public int Quantity { get; set; }
+        public string Note { get; set; }
     }
 }

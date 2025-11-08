@@ -78,7 +78,6 @@ namespace PD.BL.Services.UserService
             return ResultViewModel<List<UserDto>>.Success(userDtos, "Kullanıcılar başarıyla getirildi", 200);
         }
         
-
         public async Task<ResultViewModel<UserDto>> GetUserByIdAsync(int id)
         {
             var existedUser = await  _userRepository.GetByIdAsync(id);
