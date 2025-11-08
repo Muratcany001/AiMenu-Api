@@ -69,6 +69,7 @@ namespace PD.BL.Services.OrderService
         {
             var order = await _orderRepository.GetAsync(
                 predicate: o => o.Id == orderId,
+                asNoTracking: true,
                 includeFunc: q => q.Include(o => o.OrderItems)
                                     .ThenInclude(oi => oi.MenuItem)
             );
@@ -84,7 +85,11 @@ namespace PD.BL.Services.OrderService
 
         public async Task<ResultViewModel<List<OrderDto>>> GetAllOrdersAsync()
         {
-            var orders = await _orderRepository.GetListAsync();
+            var orders = await _orderRepository.GetListAsync(
+                asNoTracking: true, // ← false yerine true
+                includeFunc: x => x.Include(o => o.OrderItems)
+                                   .ThenInclude(xo => xo.MenuItem)
+            );
 
             var data = _mapper.Map<List<OrderDto>>(orders);
             return ResultViewModel<List<OrderDto>>.Success(data, "Orders retrieved", 200);

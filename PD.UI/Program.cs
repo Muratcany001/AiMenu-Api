@@ -45,6 +45,7 @@ builder.Services.AddScoped<IValidator<UpdateUserDto>, UpdateUserDtoValidator>();
 builder.Services.AddScoped<IValidator<LoginDto>, LoginDtoValidator>();
 builder.Services.AddScoped<IValidator<AddMenuItemDto>, AddMenuItemDtoValidator>();
 builder.Services.AddScoped<IValidator<UpdateMenuItemDto>, UpdateMenuItemDtoValidator>();
+builder.Services.AddScoped<IValidator<MenuItemDto>, MenuItemDtoValidator>();
 builder.Services.AddScoped<IValidator<CreateOrderItemDto>, CreateOrderItemDtoValidator>();
 builder.Services.AddScoped<IValidator<SetQuantityDto>, SetQuantityValidator>();
 builder.Services.AddScoped<IValidator<UpdateOrderItemNoteDto>, UpdateOrderItemNoteDtoValidator>();

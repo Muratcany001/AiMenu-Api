@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PD.DAL.Entitites.AppEntitites;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,6 +14,7 @@ namespace Dtos.OrderDto
         public int TotalPrice { get; set; }
         public string TableNumber { get; set; }
         public string Status { get; set; }
-        public string Notes { get; set; }
+        public List<OrderItemDto.OrderItemDto> OrderItems { get; set; }
+
     }
 }

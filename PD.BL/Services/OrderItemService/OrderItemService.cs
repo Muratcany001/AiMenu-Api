@@ -10,6 +10,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using PD.BL.Services.MenuItemService;
+using Dtos.MenuItemDto;
+using Microsoft.EntityFrameworkCore;
 
 namespace PD.BL.Services.OrderItemService
 {
@@ -19,13 +22,15 @@ namespace PD.BL.Services.OrderItemService
         private readonly IBaseRepository<OrderItem> _orderItemRepository;
         private readonly IBaseRepository<Order> _orderRepository;
         private readonly IMapper _mapper;
+        private readonly IBaseRepository<MenuItem> _menuItemRepository;
 
-        public OrderItemService(IBaseRepository<OrderItem> orderItemRepository, IMapper mapper, IBaseRepository<Order> orderRepository, OrderNumberHelper orderNumberHelper)
+        public OrderItemService(IBaseRepository<OrderItem> orderItemRepository, IMapper mapper, IBaseRepository<Order> orderRepository, OrderNumberHelper orderNumberHelper, IBaseRepository<MenuItem> menuItemService)
         {
             _orderItemRepository = orderItemRepository;
             _mapper = mapper;
             _orderRepository = orderRepository;
             _orderNumberHelper = orderNumberHelper;
+            _menuItemRepository = menuItemService;
         }
 
         public async Task<ResultViewModel<OrderItemDto>> AddOrderItemAsync(int? OrderId,CreateOrderItemDto createOrderItemDto)
@@ -47,16 +52,26 @@ namespace PD.BL.Services.OrderItemService
                 await _orderRepository.AddAsync(order);
             }
             
-            var existedItem = await _orderItemRepository.GetAsync(x => x.OrderId == OrderId && x.MenuItemId == createOrderItemDto.MenuItemId);
+            var existedItem = await _orderItemRepository.GetAsync(x => x.OrderId == order.Id && x.MenuItemId == createOrderItemDto.MenuItemId);
+            var menuItem = await _menuItemRepository.GetByIdAsync(createOrderItemDto.MenuItemId);
+            OrderItem orderItemEntity;
             if (existedItem != null)
             {
-                return ResultViewModel<OrderItemDto>.Failure("this item already exists in order", null, 400);
+                existedItem.Quantity += createOrderItemDto.Quantity;
+                await _orderItemRepository.UpdateAsync(existedItem);
+                orderItemEntity = existedItem;
             }
+            else
+            {
+                createOrderItemDto.OrderId = order.Id;
+                orderItemEntity = _mapper.Map<OrderItem>(createOrderItemDto);
+                await _orderItemRepository.AddAsync(orderItemEntity);
+            }
+            order = await _orderRepository.GetAsync(x => x.Id == order.Id);
+            order.TotalPrice += (int)(createOrderItemDto.Quantity * menuItem.Price);
+            await _orderRepository.UpdateAsync(order);
 
-            createOrderItemDto.OrderId = order.Id;
-            var oderItemEntity = _mapper.Map<OrderItem>(createOrderItemDto);
-            await _orderItemRepository.AddAsync(oderItemEntity);
-            var data = _mapper.Map<OrderItemDto>(oderItemEntity);
+            var data = _mapper.Map<OrderItemDto>(orderItemEntity);
             return ResultViewModel<OrderItemDto>.Success(data, "order item added successfully", 201);
         }
 
@@ -73,7 +88,10 @@ namespace PD.BL.Services.OrderItemService
 
         public async Task<ResultViewModel<List<OrderItemDto>>> GetOrderItemsByOrderIdAsync(int orderId)
         {
-            var orderItems = await _orderItemRepository.GetListAsync(x => x.OrderId == orderId, asNoTracking:true);
+            var orderItems = await _orderItemRepository.GetListAsync(x => x.OrderId == orderId
+                , asNoTracking: true
+                , includeFunc: x => x.Include(q => q.MenuItem)
+                );
             if (!orderItems.Any())
             {
                 return ResultViewModel<List<OrderItemDto>>.NotFound("No order items found", 404);

@@ -15,8 +15,6 @@ namespace PD.BL.Validators.OrderValidator
             RuleFor(x => x.TableNumber)
                 .NotEmpty().WithMessage("Table number is required.")
                 .MaximumLength(10).WithMessage("Table number cannot exceed 10 characters.");
-            RuleFor(x => x.Notes)
-                .MaximumLength(200).WithMessage("Notes cannot exceed 200 characters.");
         }
     }
 }
