@@ -14,9 +14,9 @@ namespace PD.UI.Controllers
         }
 
         [HttpPost("api/orderItems/addOrderItem")]
-        public async Task<IActionResult> AddOrderItem(int? orderId, CreateOrderItemDto createOrderItemDto)
+        public async Task<IActionResult> AddOrderItem(int? orderId, string? tableNumber, CreateOrderItemDto createOrderItemDto)
         {
-            var result = await _orderItemService.AddOrderItemAsync(orderId, createOrderItemDto);
+            var result = await _orderItemService.AddOrderItemAsync(orderId,tableNumber, createOrderItemDto);
             return Ok(result);
         }
         [HttpDelete("api/orderItems/deleteOrderItem/{orderItemId}")]
