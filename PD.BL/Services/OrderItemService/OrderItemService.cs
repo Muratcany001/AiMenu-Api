@@ -33,7 +33,7 @@ namespace PD.BL.Services.OrderItemService
             _menuItemRepository = menuItemService;
         }
 
-        public async Task<ResultViewModel<OrderItemDto>> AddOrderItemAsync(int? OrderId,CreateOrderItemDto createOrderItemDto)
+        public async Task<ResultViewModel<OrderItemDto>> AddOrderItemAsync(int? OrderId, string? tableNumber,CreateOrderItemDto createOrderItemDto)
         {
             
 
@@ -45,7 +45,7 @@ namespace PD.BL.Services.OrderItemService
                     OrderNumber = OrderNumberHelper.GenerateOrderNumber(),
                     Status = "Pending",
                     Notes = null,
-                    TableNumber = null,
+                    TableNumber = tableNumber,
                     TotalPrice = 0,
                     OrderTime = DateTime.Now
                 };
