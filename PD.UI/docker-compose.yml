@@ -1,0 +1,19 @@
+﻿version: '3.8'
+
+services:
+  pd-redis:
+    image: redis:alpine                 
+    container_name: plate_detector_redis
+    restart: always                     
+    ports:
+      - "6379:6379"                     
+
+  pd-sql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: plate_detector_sql
+    restart: always
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=GucluBirSifre123!
+    ports:
+      - "1433:1433"

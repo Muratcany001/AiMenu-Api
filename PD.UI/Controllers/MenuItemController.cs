@@ -2,6 +2,7 @@
 using Dtos.MenuItemDto;
 using Microsoft.AspNetCore.Mvc;
 using PD.BL.Services.MenuItemService;
+using PD.BL.Services.RedisCacheService;
 
 namespace PD.UI.Controllers
 {
@@ -9,9 +10,11 @@ namespace PD.UI.Controllers
     public class MenuItemController : Controller
     {
         private readonly IMenuItemService _menuItemService;
-        public MenuItemController(IMenuItemService menuItemService)
+        private readonly IRedisCacheService _cache;
+        public MenuItemController(IMenuItemService menuItemService, IRedisCacheService cache)
         {
             _menuItemService = menuItemService;
+            _cache = cache;
         }
 
         [HttpPost("api/menuItems/addMenuItem")]
@@ -31,8 +34,17 @@ namespace PD.UI.Controllers
         [HttpGet("api/menuItems/getAllMenuItems")]
         public async Task<IActionResult> GetAllMenuItems()
         {
-            var result = await _menuItemService.GetAllMenuItems();
-            return Ok(result);
+            // Istenilen veriyi cache de ara
+            var cachedData = _cache.GetData<List<MenuItemDto>>("allMenuItems");
+            // Eger varsa dondur
+            if (cachedData != null) {
+                var response = ResultViewModel<List<MenuItemDto>>.Success(cachedData, "Retrieved from cache", 200);
+                return Ok(response);
+            }
+            //Eger cache icerisinde yoksa cache den al
+            var serviceResult = await _menuItemService.GetAllMenuItems();
+            _cache.SetData("allMenuItems", serviceResult.Data);
+            return Ok(serviceResult);
         }
 
         [HttpGet("api/menuItems/getMenuItemById/{id}")]

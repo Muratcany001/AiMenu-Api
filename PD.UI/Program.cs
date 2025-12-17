@@ -14,6 +14,7 @@ using PD.BL.Services.OrderItemService;
 using PD.BL.Services.OrderService;
 using PD.BL.Helpers;
 using PD.BL.Helpers.OrderHelper;
+using PD.BL.Services.RedisCacheService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +24,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IOrderItemService, OrderItemService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IRedisCacheService, RedisCacheService>();
 
 // ============ REPOSITORIES ============
 builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -30,8 +32,15 @@ builder.Services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
 
 // ============ HELPERS ============
 builder.Services.AddScoped<IJwtHelper, JwtHelper>();
-builder.Services.AddScoped<HashHelper>();
-builder.Services.AddScoped<OrderNumberHelper>();
+builder.Services.AddScoped<HashHelper, HashHelper>();
+builder.Services.AddScoped<OrderNumberHelper, OrderNumberHelper>();
+
+//redis
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString("Redis");
+    options.InstanceName = "PD_RedisInstance";
+});
 
 // ============ FLUENT VALIDATION ============
 builder.Services.AddFluentValidationAutoValidation();
