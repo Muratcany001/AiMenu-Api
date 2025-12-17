@@ -21,6 +21,7 @@ using Dtos.OrderItemDto;
 using PD.BL.Validators.OrderItemValidator;
 using PD.BL.Services.OrderService;
 using PD.BL.Helpers.OrderHelper;
+using PD.BL.Services.RedisCacheService;
 
 
 
@@ -34,6 +35,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IOrderItemService, OrderItemService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IRedisCacheService, RedisCacheService>();
 
 //repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -54,6 +56,12 @@ builder.Services.AddScoped<IJwtHelper, JwtHelper>();
 builder.Services.AddScoped<HashHelper, HashHelper>();
 builder.Services.AddScoped<OrderNumberHelper, OrderNumberHelper>();
 
+//redis
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString("Redis");
+    options.InstanceName = "PD_RedisInstance";
+});
 
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddAutoMapper(cfg => {
