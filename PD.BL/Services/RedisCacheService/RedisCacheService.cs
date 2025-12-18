@@ -25,6 +25,16 @@ namespace PD.BL.Services.RedisCacheService
             return System.Text.Json.JsonSerializer.Deserialize<T>(data);
         }
 
+        public void RemoveData(string key)
+        {
+            var data = _cache.GetString(key);
+            if (data != null)
+            {
+                _cache.Remove(key);
+            }
+            
+        }
+
         public void SetData<T>(string key, T data, TimeSpan? expiration = null) where T : class
         {
             var option = new DistributedCacheEntryOptions()

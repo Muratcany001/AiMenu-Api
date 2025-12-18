@@ -20,7 +20,9 @@ namespace PD.UI.Controllers
         [HttpPost("api/menuItems/addMenuItem")]
         public async Task<IActionResult> addMenuItem(AddMenuItemDto addMenuItemDto)
         {
+
             var result = await _menuItemService.AddMenuItem(addMenuItemDto);
+            _cache.RemoveData("allMenuItems");
             return Ok(result);
         }
 
@@ -28,6 +30,8 @@ namespace PD.UI.Controllers
         public async Task<IActionResult> DeleteMenuItem(int id)
         {
             var result = await _menuItemService.DeleteMenuItem(id);
+            //item silinecegi zaman cache deki tum menu itemlari kaldir
+            _cache.RemoveData("allMenuItems");
             return Ok(result);
         }
 
@@ -58,6 +62,7 @@ namespace PD.UI.Controllers
         public async Task<IActionResult> UpdateMenuItem(int id, UpdateMenuItemDto updateMenuItemDto)
         {
             var result = await _menuItemService.UpdateMenuItem(id, updateMenuItemDto);
+            _cache.RemoveData("allMenuItems");
             return Ok(result);
         }
 
