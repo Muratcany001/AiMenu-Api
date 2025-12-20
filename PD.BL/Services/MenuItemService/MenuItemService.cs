@@ -3,8 +3,11 @@ using Common.ViewModels;
 using Dtos.MenuItemDto;
 using Dtos.UserDtos;
 using FluentValidation;
+using PD.BL.Helpers.GeminiHelper;
+using PD.BL.Services.RedisCacheService;
 using PD.DAL.Entitites.AppEntitites;
 using PD.DAL.Interface;
+using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,12 +18,18 @@ namespace PD.BL.Services.MenuItemService
 {
     public class MenuItemService : IMenuItemService
     {
+        private readonly HttpClient _httpClient;
         private readonly IBaseRepository<MenuItem> _baseRepository;
         private readonly IMapper _mapper;
-        public MenuItemService(IBaseRepository<MenuItem> menuItemRepository, IMapper mapper)
+        private readonly IRedisCacheService _cache;
+        private readonly GeminiHelper _geminiHelper;
+        public MenuItemService(IBaseRepository<MenuItem> menuItemRepository, IMapper mapper, IRedisCacheService cache, HttpClient httpClient, GeminiHelper geminiHelper)
         {
             _baseRepository = menuItemRepository;
             _mapper = mapper;
+            _cache = cache;
+            _httpClient = httpClient;
+            _geminiHelper = geminiHelper;
         }
 
         public async Task<ResultViewModel<MenuItemDto>> AddMenuItem(AddMenuItemDto addMenuItemDto)
@@ -98,17 +107,101 @@ namespace PD.BL.Services.MenuItemService
 
         public async Task<ResultViewModel<List<MenuItemDto>>> SearchMenuItems(string searchTerm)
         {
-            var existedItems = await _baseRepository.GetListAsync(x => x.Name.Contains(searchTerm) || x.Description.Contains(searchTerm), asNoTracking:false);
-            if (existedItems == null)
+            System.Diagnostics.Debug.WriteLine($" Arama terimi: '{searchTerm}'");
+
+            var existedItems = await _baseRepository.GetListAsync(asNoTracking: false);
+
+            System.Diagnostics.Debug.WriteLine($" Veritabanından {existedItems.Count()} ürün geldi");
+
+            if (!existedItems.Any())
+                return ResultViewModel<List<MenuItemDto>>
+                    .NotFound("No menu items found", 404);
+
+            if (string.IsNullOrWhiteSpace(searchTerm))
             {
-                return ResultViewModel<List<MenuItemDto>>.NotFound("No menu items found matching the search term",404);
+                var allData = _mapper.Map<List<MenuItemDto>>(existedItems);
+                return ResultViewModel<List<MenuItemDto>>
+                    .Success(allData, "Menu items retrieved successfully", 200);
             }
-            var data = _mapper.Map<List<MenuItemDto>>(existedItems);
-            return ResultViewModel<List<MenuItemDto>>.Success(data, "Menu items retrieved successfully", 200);
+
+            // Check cache first before calling Gemini
+            var cacheKey = $"search_{searchTerm.ToLowerInvariant()}";
+            var cachedResult = _cache.GetData<List<int>>(cacheKey);
+            List<int> geminiResponse;
+
+            if (cachedResult != null)
+            {
+                System.Diagnostics.Debug.WriteLine($" Cache hit: {cacheKey}");
+                geminiResponse = cachedResult;
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine(" Gemini çağrılıyor...");
+                geminiResponse = await _geminiHelper.CallGeminiAsync(searchTerm, existedItems);
+                
+                // Cache the result for 1 hour
+                if (geminiResponse != null && geminiResponse.Any())
+                {
+                    _cache.SetData(cacheKey, geminiResponse, TimeSpan.FromHours(1));
+                }
+            }
+
+            System.Diagnostics.Debug.WriteLine($" Gemini cevabı: {geminiResponse?.Count ?? 0} ID");
+
+            List<MenuItem> filteredItems;
+
+            if (geminiResponse != null && geminiResponse.Any())
+            {
+                System.Diagnostics.Debug.WriteLine($" Gemini ID'leri: [{string.Join(", ", geminiResponse)}]");
+
+                var idSet = geminiResponse.ToHashSet();
+                filteredItems = existedItems.Where(x => idSet.Contains(x.Id)).ToList();
+
+                System.Diagnostics.Debug.WriteLine($" ID'lere göre {filteredItems.Count} ürün bulundu");
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine(" Gemini boş döndü, fallback string search başlıyor...");
+
+                var searchLower = searchTerm.ToLowerInvariant();
+
+                filteredItems = existedItems.Where(x =>
+                    (x.Name ?? "").ToLowerInvariant().Contains(searchLower) ||
+                    (x.Description ?? "").ToLowerInvariant().Contains(searchLower) ||
+                    (x.Ingeredents ?? "").ToLowerInvariant().Contains(searchLower) ||
+                    (x.Category ?? "").ToLowerInvariant().Contains(searchLower)
+                ).ToList();
+
+                System.Diagnostics.Debug.WriteLine($" String search sonucu: {filteredItems.Count} ürün");
+
+                if (!filteredItems.Any())
+                {
+                    System.Diagnostics.Debug.WriteLine(" Hiçbir ürün bulunamadı");
+
+                    var samples = existedItems.Take(3).Select(x =>
+                        $"'{x.Name}' (Cat: {x.Category})").ToList();
+                    System.Diagnostics.Debug.WriteLine($" Örnek ürünler: {string.Join(", ", samples)}");
+
+                    return ResultViewModel<List<MenuItemDto>>
+                        .NotFound("İsteğinize uygun ürün bulunamadı.", 404);
+                }
+
+                System.Diagnostics.Debug.WriteLine($"🔎 Bulunan ürünler: {string.Join(", ", filteredItems.Select(x => x.Name))}");
+            }
+
+            var data = _mapper.Map<List<MenuItemDto>>(filteredItems);
+
+            System.Diagnostics.Debug.WriteLine($" Başarılı: {data.Count} ürün döndürülüyor");
+
+            return ResultViewModel<List<MenuItemDto>>
+                .Success(data, "Menu items retrieved successfully", 200);
         }
+
+
 
         public async Task<ResultViewModel<MenuItemDto>> UpdateMenuItem(int id, UpdateMenuItemDto updateMenuItemDto)
         {
+            
             var existedItem =  await _baseRepository.GetByIdAsync(id);
             if (existedItem == null)
             {
