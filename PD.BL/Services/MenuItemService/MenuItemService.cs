@@ -59,30 +59,58 @@ namespace PD.BL.Services.MenuItemService
 
         public async Task<ResultViewModel<List<MenuItemDto>>> GetAllMenuItems()
         {
-            var existedItems = await  _baseRepository.GetListAsync(asNoTracking: false);
-            if (existedItems == null)
+            string key = "all_menu_items";
+            var cache = _cache.GetData<List<MenuItemDto>>(key);
+            if (cache != null)
             {
-                return ResultViewModel<List<MenuItemDto>>.NotFound("No menu items found",404);
+                return ResultViewModel<List<MenuItemDto>>.Success(cache, "Menu items retrieved successfully from cache", 200);
             }
-            var list = _mapper.Map<List<MenuItemDto>>(existedItems);
-            return ResultViewModel<List<MenuItemDto>>.Success(list, "Menu items retrieved successfully", 200);
+            else { 
+
+                var existedItems = await _baseRepository.GetListAsync(asNoTracking: false);
+                if (existedItems == null)
+                {
+                    return ResultViewModel<List<MenuItemDto>>.NotFound("No menu items found",404);
+                }
+                var list = _mapper.Map<List<MenuItemDto>>(existedItems);
+                _cache.SetData("all_menu_items",list);
+                return ResultViewModel<List<MenuItemDto>>.Success(list, "Menu items retrieved successfully", 200);
+            }
         }
 
         public async Task<ResultViewModel<MenuItemDto>> GetMenuItemById(int id)
         {
+            string key = $"menu_item_{id}";
+            var cachedData = _cache.GetData<MenuItemDto>(key);
+            if (cachedData != null)
+            {
+                return ResultViewModel<MenuItemDto>.Success(cachedData, "Menu item retrieved successfully from cache", 200);
+            }
             var existedItems = await _baseRepository.GetByIdAsync(id);
             if (existedItems == null)
             {
                 return ResultViewModel<MenuItemDto>.NotFound("Menu item not found",404);
             }
             var data = _mapper.Map<MenuItemDto>(existedItems);
+            _cache.SetData(key, data);
             return ResultViewModel<MenuItemDto>.Success(data, "Menu item retrieved successfully", 200);
         }
 
         public async Task<ResultViewModel<List<MenuItemDto>>> GetMenuItemByIngeredients(string ingredients)
         {
+            // cache sorgusu 
+            string searchTerm = ingredients.Trim().ToLower();
+            string key = $"menu_items_ingredients_{searchTerm}";
+
+            var cachedData = _cache.GetData<List<MenuItemDto>>(key);
+            if (cachedData != null)
+            {
+                return ResultViewModel<List<MenuItemDto>>.Success(cachedData, "Menu items retrieved succesfully from cache", 200);
+            }
             var existedItems = await _baseRepository.GetListAsync(x => x.Ingeredents.Equals(ingredients));
             var data = _mapper.Map<List<MenuItemDto>>(existedItems);
+            //eger cache icerisinde yoksa set etme
+            _cache.SetData<List<MenuItemDto>>(key, data);
             return ResultViewModel<List<MenuItemDto>>.Success(data, "Menu items retrieved successfully", 200);
         }
 
@@ -201,7 +229,6 @@ namespace PD.BL.Services.MenuItemService
 
         public async Task<ResultViewModel<MenuItemDto>> UpdateMenuItem(int id, UpdateMenuItemDto updateMenuItemDto)
         {
-            
             var existedItem =  await _baseRepository.GetByIdAsync(id);
             if (existedItem == null)
             {
@@ -213,5 +240,6 @@ namespace PD.BL.Services.MenuItemService
             var data = _mapper.Map<MenuItemDto>(existedItem);
             return ResultViewModel<MenuItemDto>.Success(data, "Menu item updated successfully", 200);
         }
+
     }
 }

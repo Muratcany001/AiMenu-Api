@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using PD.BL.Services.MenuItemService;
 using Dtos.MenuItemDto;
 using Microsoft.EntityFrameworkCore;
+using PD.BL.Services.RedisCacheService;
 
 namespace PD.BL.Services.OrderItemService
 {
@@ -23,20 +24,22 @@ namespace PD.BL.Services.OrderItemService
         private readonly IBaseRepository<Order> _orderRepository;
         private readonly IMapper _mapper;
         private readonly IBaseRepository<MenuItem> _menuItemRepository;
+        private readonly IRedisCacheService _cache;
 
-        public OrderItemService(IBaseRepository<OrderItem> orderItemRepository, IMapper mapper, IBaseRepository<Order> orderRepository, OrderNumberHelper orderNumberHelper, IBaseRepository<MenuItem> menuItemService)
+        public OrderItemService(IBaseRepository<OrderItem> orderItemRepository, IMapper mapper, IBaseRepository<Order> orderRepository, OrderNumberHelper orderNumberHelper, IBaseRepository<MenuItem> menuItemService, IRedisCacheService cache)
         {
             _orderItemRepository = orderItemRepository;
             _mapper = mapper;
             _orderRepository = orderRepository;
             _orderNumberHelper = orderNumberHelper;
             _menuItemRepository = menuItemService;
+            _cache = cache;
         }
 
         public async Task<ResultViewModel<OrderItemDto>> AddOrderItemAsync(int? OrderId, string? tableNumber,CreateOrderItemDto createOrderItemDto)
         {
-            
 
+            
             var order= await _orderRepository.GetAsync(x => x.Id == OrderId);
             if(order == null)
             {
@@ -51,7 +54,8 @@ namespace PD.BL.Services.OrderItemService
                 };
                 await _orderRepository.AddAsync(order);
             }
-            
+            var key = $"order_items:{order.Id}";
+
             var existedItem = await _orderItemRepository.GetAsync(x => x.OrderId == order.Id && x.MenuItemId == createOrderItemDto.MenuItemId);
             var menuItem = await _menuItemRepository.GetByIdAsync(createOrderItemDto.MenuItemId);
             OrderItem orderItemEntity;
@@ -70,8 +74,10 @@ namespace PD.BL.Services.OrderItemService
             order = await _orderRepository.GetAsync(x => x.Id == order.Id);
             order.TotalPrice += (int)(createOrderItemDto.Quantity * menuItem.Price);
             await _orderRepository.UpdateAsync(order);
-
+            await UpdateOrderTotalPrice(order.Id);
+            _cache.RemoveData(key);
             var data = _mapper.Map<OrderItemDto>(orderItemEntity);
+
             return ResultViewModel<OrderItemDto>.Success(data, "order item added successfully", 201);
         }
 
@@ -83,11 +89,19 @@ namespace PD.BL.Services.OrderItemService
                 return ResultViewModel<bool>.NotFound("Order item not found", 404);
             }
             await _orderItemRepository.DeleteAsync(existedItem);
+            await UpdateOrderTotalPrice(existedItem.OrderId);
+            _cache.RemoveData($"order_items:{existedItem.OrderId}");
             return ResultViewModel<bool>.Success(true, "Order item deleted successfully", 200);
         }
 
         public async Task<ResultViewModel<List<OrderItemDto>>> GetOrderItemsByOrderIdAsync(int orderId)
         {
+            string key = $"order_items:{orderId}";
+            var cachedData = _cache.GetData<List<OrderItemDto>>(key);
+            if(cachedData !=null)
+            {
+                return ResultViewModel<List<OrderItemDto>>.Success(cachedData, "veriler redisten cekildi", 200);
+            }
             var orderItems = await _orderItemRepository.GetListAsync(x => x.OrderId == orderId
                 , asNoTracking: true
                 , includeFunc: x => x.Include(q => q.MenuItem)
@@ -97,6 +111,7 @@ namespace PD.BL.Services.OrderItemService
                 return ResultViewModel<List<OrderItemDto>>.NotFound("No order items found", 404);
             }
             var list = _mapper.Map<List<OrderItemDto>>(orderItems);
+            _cache.SetData(key, list);
             return ResultViewModel<List<OrderItemDto>>.Success(list, "Order list found", 200);
         }
 
@@ -113,9 +128,11 @@ namespace PD.BL.Services.OrderItemService
                 return ResultViewModel<OrderItemDto>.Failure("Quantity must be at least 1", null, 400);
             }
             orderItem.Quantity = setQuantityDto.Quantity;
-            
             await _orderItemRepository.UpdateAsync(orderItem);
+            await UpdateOrderTotalPrice(orderItem.OrderId);
+            _cache.RemoveData($"order_items:{orderItem.OrderId}");
             var data = _mapper.Map<OrderItemDto>(orderItem);
+
             return ResultViewModel<OrderItemDto>.Success(data, "Quantity updated successfully", 200);
         }
 
@@ -124,17 +141,32 @@ namespace PD.BL.Services.OrderItemService
             var orderItem =  await _orderItemRepository.GetByIdAsync(orderItemId);
             if (orderItem == null)
             {
-                ResultViewModel<OrderItemDto>.NotFound("Order item not found", 404);
+                return ResultViewModel<OrderItemDto>.NotFound("Order item not found", 404);
             }
-            if(updateOrderItemNoteDto.Note.Any())
+            if(string.IsNullOrWhiteSpace(updateOrderItemNoteDto.Note))
             {
                 return ResultViewModel<OrderItemDto>.Failure("Note cannot be empty", null, 400);
             }
             orderItem.Note = updateOrderItemNoteDto.Note;
-            
             await _orderItemRepository.UpdateAsync(orderItem);
+            await UpdateOrderTotalPrice(orderItem.OrderId);
             var data = _mapper.Map<OrderItemDto>(orderItem);
+            _cache.RemoveData($"order_items:{orderItem.OrderId}");
             return ResultViewModel<OrderItemDto>.Success(data, "Order item note updated successfully", 200);
+        }
+        // order icerisindeki price i okuyarak son price i hesaplar
+        private async Task UpdateOrderTotalPrice(int orderId)
+        {
+            var order = await _orderRepository.GetByIdAsync(orderId);
+            var items = await _orderItemRepository.GetListAsync(x=> x.OrderId == orderId, includeFunc: i=> i.Include(m=> m.MenuItem));
+            if (order !=null && items != null)
+            {
+                decimal totalPrice = items.Sum(x=> x.Quantity * x.MenuItem.Price);
+
+                order.TotalPrice = (int)totalPrice;
+                // buradaki update ile de son price i dbye gonderir
+                await _orderRepository.UpdateAsync(order);
+            }
         }
     }
 }
