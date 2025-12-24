@@ -23,6 +23,8 @@ namespace PD.BL.Services.MenuItemService
         private readonly IMapper _mapper;
         private readonly IRedisCacheService _cache;
         private readonly GeminiHelper _geminiHelper;
+        private const string ItemKeyPrefix = "menu_item_";
+        private const string AllItemsKey = "all_menu_items";
         public MenuItemService(IBaseRepository<MenuItem> menuItemRepository, IMapper mapper, IRedisCacheService cache, HttpClient httpClient, GeminiHelper geminiHelper)
         {
             _baseRepository = menuItemRepository;
@@ -42,6 +44,8 @@ namespace PD.BL.Services.MenuItemService
             var menuItemEntity =  _mapper.Map<MenuItem>(addMenuItemDto);
             await _baseRepository.AddAsync(menuItemEntity);
             var data = _mapper.Map<MenuItemDto>(menuItemEntity);
+
+            _cache.RemoveData(AllItemsKey);
             return ResultViewModel<MenuItemDto>.Success(data, "menu item added successfully", 201);
         }
 
@@ -53,8 +57,10 @@ namespace PD.BL.Services.MenuItemService
                 return ResultViewModel<object>.NotFound("Menu item not found",404);
             }
             await _baseRepository.DeleteAsync(existedItem);
+            var key = $"{ItemKeyPrefix}{id}";
+            _cache.RemoveData(key);
+            _cache.RemoveData(AllItemsKey);
             return ResultViewModel<object>.Success(null, "Menu item deleted successfully", 200);
-
         }
 
         public async Task<ResultViewModel<List<MenuItemDto>>> GetAllMenuItems()
@@ -129,15 +135,15 @@ namespace PD.BL.Services.MenuItemService
             }
             
            var existedItems= await _baseRepository.GetListAsync(x => x.Price >= minPrice && x.Price <= maxPrice);
-            var data = _mapper.Map<List<MenuItemDto>>(existedItems);
-            return ResultViewModel<List<MenuItemDto>>.Success(data, "Menu items retrieved successfully", 200);
+           var data = _mapper.Map<List<MenuItemDto>>(existedItems);
+           return ResultViewModel<List<MenuItemDto>>.Success(data, "Menu items retrieved successfully", 200);
         }
 
         public async Task<ResultViewModel<List<MenuItemDto>>> SearchMenuItems(string searchTerm)
         {
             System.Diagnostics.Debug.WriteLine($" Arama terimi: '{searchTerm}'");
-
-            var existedItems = await _baseRepository.GetListAsync(asNoTracking: false);
+            var key = "all_menu_items";
+            var existedItems = await _baseRepository.GetListAsync(asNoTracking:false);
 
             System.Diagnostics.Debug.WriteLine($" Veritabanından {existedItems.Count()} ürün geldi");
 
@@ -236,10 +242,11 @@ namespace PD.BL.Services.MenuItemService
             }
             _mapper.Map(updateMenuItemDto, existedItem);
 
-            await _baseRepository.UpdateAsync(existedItem);
+            await _baseRepository.UpdateAsync(existedItem);            
             var data = _mapper.Map<MenuItemDto>(existedItem);
+            _cache.RemoveData(AllItemsKey);
+            _cache.SetData($"{ItemKeyPrefix}{id}", data);
             return ResultViewModel<MenuItemDto>.Success(data, "Menu item updated successfully", 200);
         }
-
     }
 }
