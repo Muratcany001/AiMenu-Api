@@ -25,7 +25,7 @@ namespace PD.BL.Services.OrderItemService
         private readonly IMapper _mapper;
         private readonly IBaseRepository<MenuItem> _menuItemRepository;
         private readonly IRedisCacheService _cache;
-
+        private readonly string OrderCachePrefix = "order_items:";
         public OrderItemService(IBaseRepository<OrderItem> orderItemRepository, IMapper mapper, IBaseRepository<Order> orderRepository, OrderNumberHelper orderNumberHelper, IBaseRepository<MenuItem> menuItemService, IRedisCacheService cache)
         {
             _orderItemRepository = orderItemRepository;
@@ -75,7 +75,7 @@ namespace PD.BL.Services.OrderItemService
             order.TotalPrice += (int)(createOrderItemDto.Quantity * menuItem.Price);
             await _orderRepository.UpdateAsync(order);
             await UpdateOrderTotalPrice(order.Id);
-            _cache.RemoveData(key);
+            _cache.RemoveData($"{OrderCachePrefix}{order.Id}");
             var data = _mapper.Map<OrderItemDto>(orderItemEntity);
 
             return ResultViewModel<OrderItemDto>.Success(data, "order item added successfully", 201);
@@ -90,13 +90,13 @@ namespace PD.BL.Services.OrderItemService
             }
             await _orderItemRepository.DeleteAsync(existedItem);
             await UpdateOrderTotalPrice(existedItem.OrderId);
-            _cache.RemoveData($"order_items:{existedItem.OrderId}");
+            _cache.RemoveData($"{OrderCachePrefix}{existedItem.OrderId}");
             return ResultViewModel<bool>.Success(true, "Order item deleted successfully", 200);
         }
 
         public async Task<ResultViewModel<List<OrderItemDto>>> GetOrderItemsByOrderIdAsync(int orderId)
         {
-            string key = $"order_items:{orderId}";
+            string key = $"{OrderCachePrefix}{orderId}";
             var cachedData = _cache.GetData<List<OrderItemDto>>(key);
             if(cachedData !=null)
             {
@@ -130,7 +130,7 @@ namespace PD.BL.Services.OrderItemService
             orderItem.Quantity = setQuantityDto.Quantity;
             await _orderItemRepository.UpdateAsync(orderItem);
             await UpdateOrderTotalPrice(orderItem.OrderId);
-            _cache.RemoveData($"order_items:{orderItem.OrderId}");
+            _cache.RemoveData($"{OrderCachePrefix}{orderItem.OrderId}");
             var data = _mapper.Map<OrderItemDto>(orderItem);
 
             return ResultViewModel<OrderItemDto>.Success(data, "Quantity updated successfully", 200);
@@ -151,7 +151,7 @@ namespace PD.BL.Services.OrderItemService
             await _orderItemRepository.UpdateAsync(orderItem);
             await UpdateOrderTotalPrice(orderItem.OrderId);
             var data = _mapper.Map<OrderItemDto>(orderItem);
-            _cache.RemoveData($"order_items:{orderItem.OrderId}");
+            _cache.RemoveData($"{OrderCachePrefix}{orderItem.OrderId}");
             return ResultViewModel<OrderItemDto>.Success(data, "Order item note updated successfully", 200);
         }
         // order icerisindeki price i okuyarak son price i hesaplar
