@@ -19,7 +19,7 @@ namespace PD.BL.Helpers.JwtHelper
             _configuration = configuration;
         }
 
-         public string GenerateJwtToken(User user)
+        public string GenerateJwtToken(User user)
         {
             var claims = new List<Claim>
             {
@@ -38,7 +38,7 @@ namespace PD.BL.Helpers.JwtHelper
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.Now.AddDays(1),
+                Expires = DateTime.UtcNow.AddMinutes(5),
                 SigningCredentials = creds,
                 Issuer = _configuration.GetSection("JwtSettings:Issuer").Value,
                 Audience = _configuration.GetSection("JwtSettings:Audience").Value
