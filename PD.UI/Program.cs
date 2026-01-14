@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Serilog;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using PD.BL.Services.UserService;
@@ -16,6 +17,7 @@ using PD.BL.Helpers;
 using PD.BL.Helpers.OrderHelper;
 using PD.BL.Services.RedisCacheService;
 using PD.BL.Helpers.GeminiHelper;
+using Docker.DotNet.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -106,7 +108,11 @@ builder.Services.AddStackExchangeRedisCache(options =>
     options.Configuration = builder.Configuration.GetConnectionString("Redis");
 });
 
+//============ SERILOG ============
+builder.Host.UseSerilog((context, config) =>
+    config.ReadFrom.Configuration(context.Configuration));
 
+//============ BUILDER ============
 var app = builder.Build();
 
 // ============ MIDDLEWARE PIPELINE ============
@@ -127,5 +133,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
+//============ SERILOG BENCHMARK ============
+app.UseSerilogRequestLogging();
 app.Run();
