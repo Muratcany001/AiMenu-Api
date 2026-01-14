@@ -12,18 +12,28 @@ namespace PD.UI.Controllers
         private readonly IUserService _userService;
         private readonly IUserRepository _userRepository;
         private readonly IAuthService _authService;
+        private readonly ILogger<UserController> _logger;
 
-        public UserController(IUserService userService, IUserRepository userRepository, IAuthService authService)
+        public UserController(IUserService userService, IUserRepository userRepository, IAuthService authService, ILogger<UserController> logger)
         {
             _userService = userService;
             _userRepository = userRepository;
             _authService = authService;
+            _logger = logger;
         }
 
         [HttpPost("api/users/login")]
         public async Task<IActionResult> Login(LoginDto loginDto)
         {
+            _logger.LogInformation("Request trying");
             var token = await _authService.Login(loginDto);
+            if (token == null) 
+            { 
+                _logger.LogWarning("login failed via this email | {loginDto.Email}", loginDto.Email);
+                return Unauthorized("Invalid credentials");
+            }
+            _logger.LogWarning("Login successful for this  | {loginDto.Email}", loginDto.Email);
+            _logger.LogInformation("Token generated successfuly");
             return Ok(new { token = token });
         }
 

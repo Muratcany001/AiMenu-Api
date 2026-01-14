@@ -3,6 +3,7 @@ using Dtos.MenuItemDto;
 using Microsoft.AspNetCore.Mvc;
 using PD.BL.Services.MenuItemService;
 using PD.BL.Services.RedisCacheService;
+using System.Diagnostics;
 
 namespace PD.UI.Controllers
 {
@@ -11,10 +12,12 @@ namespace PD.UI.Controllers
     {
         private readonly IMenuItemService _menuItemService;
         private readonly IRedisCacheService _cache;
-        public MenuItemController(IMenuItemService menuItemService, IRedisCacheService cache)
+        private readonly ILogger<MenuItemController> _logger;
+        public MenuItemController(IMenuItemService menuItemService, IRedisCacheService cache, ILogger<MenuItemController> logger)
         {
             _menuItemService = menuItemService;
             _cache = cache;
+            _logger = logger;
         }
 
         [HttpPost("api/menuItems/addMenuItem")]
@@ -76,7 +79,18 @@ namespace PD.UI.Controllers
         [HttpGet("api/menuItems/searchMenuItems")]
         public async Task<IActionResult> SearchMenuItems(string searchTerm)
         {
+            var stopwatch = Stopwatch.StartNew();
+            _logger.LogInformation("User try to connect gemini service");
             var result = await _menuItemService.SearchMenuItems(searchTerm);
+            stopwatch.Stop();
+            if (stopwatch.ElapsedMilliseconds > 15000) {
+                _logger.LogWarning("User cannot to connect gemini service | {stopwatch}", stopwatch);
+            }
+            if(result == null)
+            {
+                _logger.LogWarning("User cannot to connect gemini service");
+            }
+            _logger.LogInformation("Gemini answer | {searchTerm}", searchTerm);
             return Ok(result);
         }
 
