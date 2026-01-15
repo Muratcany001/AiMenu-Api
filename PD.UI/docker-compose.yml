@@ -14,7 +14,7 @@ services:
     environment:
       - discovery.type=single-node
       - ELASTIC_PASSWORD=12345
-      - xpack.security.enabled=true
+      - xpack.security.enabled=false
       - xpack.security.http.ssl.enabled=false
       - xpack.security.transport.ssl.enabled=false
       - ES_JAVA_OPTS=-Xms1g -Xmx1g
@@ -43,6 +43,7 @@ services:
       - MSSQL_SA_PASSWORD=GucluBirSifre123!
     ports:
       - "1433:1433"
+  
 
 volumes:
  esdata01:
