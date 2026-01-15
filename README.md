@@ -315,4 +315,11 @@ If you want me to:
 
 Please open an issue or edit the README and propose changes.
 
+# SONARQUBE & KIBANA OUTPUT
+![sonarqube output](https://github.com/user-attachments/assets/10b5c802-1470-4e92-9044-f1d01005be22)
+![elastic warning level output](https://github.com/user-attachments/assets/e9d465a6-988d-4065-b7b3-636f7d0b9827)
+
+
+  
+
 ---
