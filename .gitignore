@@ -362,3 +362,4 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /PD.UI/secrets.json
+/PD.BL/Helpers/GeminiHelper/ApiKey.cs
