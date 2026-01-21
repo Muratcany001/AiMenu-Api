@@ -363,3 +363,4 @@ MigrationBackup/
 FodyWeavers.xsd
 /PD.UI/secrets.json
 /PD.BL/Helpers/GeminiHelper/ApiKey.cs
+/PD.BL/Helpers/TelegramHelper/ApiKey.cs
