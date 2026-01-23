@@ -3,6 +3,7 @@ using Common.ViewModels;
 using Dtos.OrderDto;
 using Microsoft.EntityFrameworkCore;
 using PD.BL.Helpers.OrderHelper;
+using PD.BL.Helpers.TelegramHelper;
 using PD.DAL.Entitites.AppEntitites;
 using PD.DAL.Interface;
 using System;
@@ -19,15 +20,18 @@ namespace PD.BL.Services.OrderService
         private readonly IBaseRepository<Order> _orderRepository;
         private readonly IBaseRepository<OrderItem> _orderItemRepository;
         private readonly IMapper _mapper;
+        private readonly ITelegramHelper _telegramHelper;
 
         public OrderService(
             IBaseRepository<Order> orderRepository,
             IBaseRepository<OrderItem> orderItemRepository,
-            IMapper mapper)
+            IMapper mapper,
+            ITelegramHelper telegramHelper)
         {
             _orderRepository = orderRepository;
             _orderItemRepository = orderItemRepository;
             _mapper = mapper;
+            _telegramHelper = telegramHelper;
         }
 
         public async Task<ResultViewModel<OrderDto>> CreateAnonymousOrderAsync()
@@ -102,13 +106,36 @@ namespace PD.BL.Services.OrderService
             {
                 return ResultViewModel<OrderDto>.NotFound("Order not found", 404);
             }
-
             order.Status = newStatus;
             await _orderRepository.UpdateAsync(order);
+            if (newStatus == "Siparişi tamamla")
+            {
+                var completedOrder = await _orderRepository.GetAsync(
+                    x => x.Id == orderId,
+                    includeFunc: q => q
+                        .Include(o => o.OrderItems)
+                        .ThenInclude(oi => oi.MenuItem)
+                );
 
+                var completedDto = _mapper.Map<OrderDto>(completedOrder);
+
+                await _telegramHelper.SendOrderCompletedAsync(completedDto);
+
+                return ResultViewModel<OrderDto>.Success(
+                    completedDto,
+                    "Order completed and notification sent",
+                    200
+                );
+            }
             var data = _mapper.Map<OrderDto>(order);
-            return ResultViewModel<OrderDto>.Success(data, "Order status updated", 200);
+
+            return ResultViewModel<OrderDto>.Success(
+                data,
+                "Order status updated",
+                200
+            );
         }
+
 
         public async Task<ResultViewModel<bool>> DeleteOrderAsync(int orderId)
         {
@@ -120,6 +147,19 @@ namespace PD.BL.Services.OrderService
             
             await _orderRepository.DeleteAsync(order);
             return ResultViewModel<bool>.Success(true, "Order deleted successfully", 200);
+        }
+
+        public async Task<ResultViewModel<OrderDto>> GetOrderItemsByOrderNumber(string orderNumber)
+        {
+            var order = await _orderRepository.GetAsync(x => x.OrderNumber == orderNumber,includeFunc: q => q
+            .Include(o => o.OrderItems)
+            .ThenInclude(oi => oi.MenuItem));
+            if (order == null)
+            {
+                return ResultViewModel<OrderDto>.NotFound("Order list not found", 404);
+            }
+            var data = _mapper.Map<OrderDto>(order);
+            return ResultViewModel<OrderDto>.Success(data, "Order list found succesfully", 200);
         }
     }
 }

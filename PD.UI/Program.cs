@@ -1,23 +1,25 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using Serilog;
+﻿using Docker.DotNet.Models;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using PD.BL.Helpers;
+using PD.BL.Helpers.GeminiHelper;
+using PD.BL.Helpers.JwtHelper;
+using PD.BL.Helpers.OrderHelper;
+using PD.BL.Helpers.TelegramHelper;
+using PD.BL.Services.AuthService;
+using PD.BL.Services.MenuItemService;
+using PD.BL.Services.OrderItemService;
+using PD.BL.Services.OrderService;
+using PD.BL.Services.RedisCacheService;
 using PD.BL.Services.UserService;
 using PD.DAL;
 using PD.DAL.Interface;
 using PD.DAL.Repository;
-using PD.BL.Services.AuthService;
-using PD.BL.Helpers.JwtHelper;
-using PD.BL.Services.MenuItemService;
-using PD.BL.Services.OrderItemService;
-using PD.BL.Services.OrderService;
-using PD.BL.Helpers;
-using PD.BL.Helpers.OrderHelper;
-using PD.BL.Services.RedisCacheService;
-using PD.BL.Helpers.GeminiHelper;
-using Docker.DotNet.Models;
+using Serilog;
+using System.Text;
+using Telegram.Bot;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,6 +41,7 @@ builder.Services.AddScoped<IJwtHelper, JwtHelper>();
 builder.Services.AddScoped<HashHelper, HashHelper>();
 builder.Services.AddScoped<OrderNumberHelper, OrderNumberHelper>();
 builder.Services.AddHttpClient<GeminiHelper>();
+builder.Services.AddScoped<ITelegramHelper,TelegramHelper>();
 builder.Services.AddMemoryCache();
 
 // ============ FLUENT VALIDATION ============
@@ -97,6 +100,8 @@ builder.Services.AddCors(options =>
               .AllowAnyHeader();
     });
 });
+// ============ SECRETS ============
+builder.Configuration.AddUserSecrets<Program>();
 
 // ============ DATABASE ============
 builder.Services.AddDbContext<Context>(options =>
@@ -107,7 +112,6 @@ builder.Services.AddStackExchangeRedisCache(options =>
 {
     options.Configuration = builder.Configuration.GetConnectionString("Redis");
 });
-
 //============ SERILOG ============
 builder.Host.UseSerilog((context, config) =>
     config.ReadFrom.Configuration(context.Configuration));

@@ -14,6 +14,7 @@ namespace PD.BL.Services.OrderService
             Task<ResultViewModel<OrderDto>> CreateAnonymousOrderAsync();
             Task<ResultViewModel<OrderDto>> AssignTableToOrderAsync(int orderId, string tableNumber);
             Task<ResultViewModel<OrderDto>> GetOrderByIdAsync(int orderId);
+            Task<ResultViewModel<OrderDto>> GetOrderItemsByOrderNumber(string orderNumber);
             Task<ResultViewModel<List<OrderDto>>> GetAllOrdersAsync();
             Task<ResultViewModel<OrderDto>> UpdateOrderStatusAsync(int orderId, string newStatus);
             Task<ResultViewModel<bool>> DeleteOrderAsync(int orderId);

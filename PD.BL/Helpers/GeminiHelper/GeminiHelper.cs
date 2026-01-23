@@ -27,26 +27,26 @@ namespace PD.BL.Helpers.GeminiHelper
 
         public async Task<List<int>> CallGeminiAsync(string userQuery, IEnumerable<MenuItem> menuItems)
         {
-            System.Diagnostics.Debug.WriteLine("🚀 GEMINI ÇAĞRILIYOR!");
+            System.Diagnostics.Debug.WriteLine(" GEMINI ÇAĞRILIYOR");
 
             // Cache kontrolü
             var cacheKey = $"gemini_search_{userQuery.ToLowerInvariant().Trim()}";
             if (_cache.TryGetValue(cacheKey, out List<int> cachedResult))
             {
-                System.Diagnostics.Debug.WriteLine($"✅ CACHE HIT: {cacheKey}");
+                System.Diagnostics.Debug.WriteLine($"CACHE HIT: {cacheKey}");
                 return cachedResult;
             }
 
-            System.Diagnostics.Debug.WriteLine($"❌ CACHE MISS: {cacheKey}");
+            System.Diagnostics.Debug.WriteLine($" CACHE MISS: {cacheKey}");
 
             try
             {
-                // API Key
-                var apiKey = "AIzaSyDwsPG1t1Fo7WSE01j35-ywCRA9gdn-zl0";
 
+                var apiKey = ApiKey.Gemini;
+                Console.WriteLine(apiKey);
                 if (string.IsNullOrEmpty(apiKey))
                 {
-                    System.Diagnostics.Debug.WriteLine("❌ HATA: API Key bulunamadı!");
+                    System.Diagnostics.Debug.WriteLine(" HATA: API Key bulunamadı!");
                     return new List<int>();
                 }
 
@@ -109,23 +109,23 @@ Menü:
                 _httpClient.DefaultRequestHeaders.Clear();
                 _httpClient.DefaultRequestHeaders.Add("x-goog-api-key", apiKey);
 
-                System.Diagnostics.Debug.WriteLine($"📤 İSTEK ATILIYOR: {DateTime.Now:HH:mm:ss.fff}");
+                System.Diagnostics.Debug.WriteLine($" İSTEK ATILIYOR: {DateTime.Now:HH:mm:ss.fff}");
 
                 // API çağrısı
                 var response = await _httpClient.PostAsync(url, content);
                 var responseString = await response.Content.ReadAsStringAsync();
 
-                System.Diagnostics.Debug.WriteLine($"📥 STATUS: {(int)response.StatusCode} ({response.StatusCode})");
+                System.Diagnostics.Debug.WriteLine($" STATUS: {(int)response.StatusCode} ({response.StatusCode})");
 
                 // Hata kontrolü
                 if (!response.IsSuccessStatusCode)
                 {
-                    System.Diagnostics.Debug.WriteLine($"❌ HTTP HATA: {response.StatusCode}");
-                    System.Diagnostics.Debug.WriteLine($"📄 Response: {responseString.Substring(0, Math.Min(500, responseString.Length))}");
+                    System.Diagnostics.Debug.WriteLine($" HTTP HATA: {response.StatusCode}");
+                    System.Diagnostics.Debug.WriteLine($" Response: {responseString.Substring(0, Math.Min(500, responseString.Length))}");
                     return new List<int>();
                 }
 
-                System.Diagnostics.Debug.WriteLine($"📄 Full Response: {responseString}");
+                System.Diagnostics.Debug.WriteLine($" Full Response: {responseString}");
 
                 // Response parse
                 using var doc = JsonDocument.Parse(responseString);
@@ -133,7 +133,7 @@ Menü:
                 if (!doc.RootElement.TryGetProperty("candidates", out var candidates) ||
                     candidates.GetArrayLength() == 0)
                 {
-                    System.Diagnostics.Debug.WriteLine("⚠️ Candidates bulunamadı");
+                    System.Diagnostics.Debug.WriteLine(" Candidates bulunamadı");
                     return new List<int>();
                 }
 

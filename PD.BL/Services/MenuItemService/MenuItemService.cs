@@ -220,7 +220,7 @@ namespace PD.BL.Services.MenuItemService
                         .NotFound("İsteğinize uygun ürün bulunamadı.", 404);
                 }
 
-                System.Diagnostics.Debug.WriteLine($"🔎 Bulunan ürünler: {string.Join(", ", filteredItems.Select(x => x.Name))}");
+                System.Diagnostics.Debug.WriteLine($" Bulunan ürünler: {string.Join(", ", filteredItems.Select(x => x.Name))}");
             }
 
             var data = _mapper.Map<List<MenuItemDto>>(filteredItems);
