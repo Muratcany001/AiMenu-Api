@@ -15,6 +15,7 @@ namespace Dtos.OrderDto
         public string TableNumber { get; set; }
         public string Status { get; set; }
         public List<OrderItemDto.OrderItemDto> OrderItems { get; set; }
+        public DateTime Created { get; set; } = DateTime.Now;
 
     }
 }

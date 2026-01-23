@@ -28,16 +28,16 @@ namespace PD.UI.Controllers
             return Ok(result);
 
         }
-        [HttpGet("api/orders/{orderNumber}")]
-        public async Task<IActionResult> GetOrderByOrderNumber(string orderNumber)
-        {
-            var result = await _orderService.GetOrderByIdAsync(Convert.ToInt32(orderNumber));
-            return Ok(result);
-        }
         [HttpGet("api/orders")]
         public async Task<IActionResult> GetAllOrders()
         {
             var result = await _orderService.GetAllOrdersAsync();
+            return Ok(result);
+        }
+        [HttpGet("api/orders/{orderNumber}")]
+        public async Task<IActionResult> GetOrderItemsByOrderNumber(string orderNumber)
+        {
+            var result = await _orderService.GetOrderItemsByOrderNumber(orderNumber);
             return Ok(result);
         }
         [HttpPut("api/orders/{orderId}/status")]
