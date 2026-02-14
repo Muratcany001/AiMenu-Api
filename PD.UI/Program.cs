@@ -102,6 +102,7 @@ builder.Services.AddCors(options =>
 });
 // ============ SECRETS ============
 builder.Configuration.AddUserSecrets<Program>();
+DotNetEnv.Env.Load();
 
 // ============ DATABASE ============
 builder.Services.AddDbContext<Context>(options =>
