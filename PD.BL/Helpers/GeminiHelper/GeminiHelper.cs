@@ -43,7 +43,6 @@ namespace PD.BL.Helpers.GeminiHelper
             {
 
                 var apiKey = ApiKey.Gemini;
-                Console.WriteLine(apiKey);
                 if (string.IsNullOrEmpty(apiKey))
                 {
                     System.Diagnostics.Debug.WriteLine(" HATA: API Key bulunamadı!");

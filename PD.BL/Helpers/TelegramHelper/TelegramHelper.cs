@@ -18,7 +18,7 @@ namespace PD.BL.Helpers.TelegramHelper
         {
             
             _bot = new TelegramBotClient("8250563005:AAEpaPyJBaqxI8HUmtHzs7DGPPE0nnhZErM");
-            Console.WriteLine(ApiKey.Telegram);
+            
         }
 
         public async Task SendOrderCompletedAsync(OrderDto orderDto)
